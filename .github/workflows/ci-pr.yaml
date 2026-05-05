@@ -69,6 +69,8 @@ jobs:
     - uses: actions/checkout@v6
       with:
         ref: ${{github.event.pull_request.head.sha}}
+    - name: Login to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - name: Build Docker images
       uses: hiberbee/github-action-skaffold@1.27.0
       with:
