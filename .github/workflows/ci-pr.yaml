@@ -70,7 +70,7 @@ jobs:
       with:
         ref: ${{github.event.pull_request.head.sha}}
     - name: Build Docker images
-      uses: hiberbee/github-action-skaffold@1.20.0
+      uses: hiberbee/github-action-skaffold@1.27.0
       with:
         command: build
         repository: ghcr.io/${{ github.repository }}/refs/pull/$PR_NUMBER
