@@ -69,6 +69,8 @@ jobs:
         profile: ["local-code"]
       fail-fast: true
     steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
     - uses: actions/checkout@v6
       with:
         ref: ${{github.event.pull_request.head.sha}}
