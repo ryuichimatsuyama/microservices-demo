@@ -73,8 +73,8 @@ jobs:
       uses: hiberbee/github-action-skaffold@1.27.0
       with:
         command: build
-        repository: ghcr.io/${{ github.repository }}/refs/pull/$PR_NUMBER
-        tag: $PR_NUMBER
+        repository: ghcr.io/${{ github.repository }}/refs/pull/${{ github.event.pull_request.number }}
+        tag: ${{ github.event.pull_request.number }}
         profile: network-policies
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
