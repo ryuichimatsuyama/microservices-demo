@@ -30,7 +30,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/emailservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/emailservice:latest
   - image: productcatalogservice
     context: src/productcatalogservice
     docker:
@@ -38,7 +38,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/productcatalogservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/productcatalogservice:latest
   - image: recommendationservice
     context: src/recommendationservice
     docker:
@@ -46,7 +46,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/recommendationservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/recommendationservice:latest
   - image: shoppingassistantservice
     context: src/shoppingassistantservice
     docker:
@@ -54,7 +54,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/shoppingassistantservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/shoppingassistantservice:latest
   - image: shippingservice
     context: src/shippingservice
     docker:
@@ -62,7 +62,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/shippingservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/shippingservice:latest
   - image: checkoutservice
     context: src/checkoutservice
     docker:
@@ -70,7 +70,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/checkoutservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/checkoutservice:latest
   - image: paymentservice
     context: src/paymentservice
     docker:
@@ -78,7 +78,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/paymentservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/paymentservice:latest
   - image: currencyservice
     context: src/currencyservice
     docker:
@@ -86,7 +86,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/currencyservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/currencyservice:latest
   - image: cartservice
     context: src/cartservice/src
     docker:
@@ -94,7 +94,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/cartservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/cartservice:latest
   - image: frontend
     context: src/frontend
     docker:
@@ -102,7 +102,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/frontend:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/frontend:latest
   - image: adservice
     context: src/adservice
     docker:
@@ -110,7 +110,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/adservice:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/adservice:latest
   tagPolicy:
     gitCommit: {}
   local:
@@ -174,7 +174,7 @@ build:
         buildArgs:
           BUILDKIT_INLINE_CACHE: "1"
         cacheFrom:
-          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/loadgenerator:1
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/loadgenerator:latest
   local:
     useDockerCLI: true
     useBuildkit: true
