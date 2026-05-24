@@ -117,12 +117,17 @@ kind: Service
 metadata:
   name: {{ .Values.opentelemetryCollector.name }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.opentelemetryCollector.name }}
 spec:
   ports:
   - name: grpc-otlp
     port: 4317
     protocol: TCP
     targetPort: 4317
+  - name: prometheus
+    port: 9464
+    targetPort: 9464
   selector:
     app: {{ .Values.opentelemetryCollector.name }}
   type: ClusterIP
@@ -140,20 +145,24 @@ data:
       otlp:
         protocols: 
           grpc:
+            endpoint: 0.0.0.0:4317
     processors:
+      batch:
     exporters:
-      googlecloud:
-        project: {{ .Values.opentelemetryCollector.projectId | quote }}
+      debug:
+        verbosity: detailed
+      prometheus:
+        endpoint: "0.0.0.0:9464"
     service:
       pipelines:
-        traces:
-          receivers: [otlp] # Receive otlp-formatted data from other collector instances
-          processors: []
-          exporters: [googlecloud] # Export traces directly to Google Cloud
         metrics:
           receivers: [otlp]
-          processors: []
-          exporters: [googlecloud] # Export metrics to Google Cloud
+          processors: [batch]
+          exporters: [debug, prometheus] # Export metrics to Prometheus
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -259,4 +268,26 @@ spec:
         ports:
         - "4317"
 {{- end }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.opentelemetryCollector.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.opentelemetryCollector.name }}
+
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+
+  endpoints:
+    - port: prometheus
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
 {{- end }}

@@ -33,6 +33,8 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"go.opentelemetry.io/otel/sdk/metric"
+    "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 )
 
 const (
@@ -110,6 +112,8 @@ func main() {
 
 	baseUrl = os.Getenv("BASE_URL")
 
+	initMetrics(log, ctx, svc)
+
 	if os.Getenv("ENABLE_TRACING") == "1" {
 		log.Info("Tracing enabled.")
 		initTracing(log, ctx, svc)
@@ -172,6 +176,25 @@ func main() {
 }
 func initStats(log logrus.FieldLogger) {
 	// TODO(arbrown) Implement OpenTelemtry stats
+}
+
+func initMetrics(log logrus.FieldLogger, ctx context.Context, svc *frontendServer) (*metric.MeterProvider, error) {
+	mustMapEnv(&svc.collectorAddr, "COLLECTOR_SERVICE_ADDR")
+	mustConnGRPC(ctx, &svc.collectorConn, svc.collectorAddr)
+	exporter, err := otlpmetricgrpc.New(
+		ctx,
+		otlpmetricgrpc.WithGRPCConn(svc.collectorConn),
+	)
+	if err != nil {
+		log.Warnf("warn: failed to create metric exporter: %v", err)
+	}
+	reader := metric.NewPeriodicReader(exporter)
+	mp := metric.NewMeterProvider(
+		metric.WithReader(reader),
+	)
+	otel.SetMeterProvider(mp)
+
+	return mp, err
 }
 
 func initTracing(log logrus.FieldLogger, ctx context.Context, svc *frontendServer) (*sdktrace.TracerProvider, error) {
