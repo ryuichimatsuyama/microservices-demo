@@ -146,9 +146,16 @@ data:
         protocols: 
           grpc:
             endpoint: 0.0.0.0:4317
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        operators:
+          - type: json_parser
     processors:
       batch:
     exporters:
+      otlphttp:
+        endpoint: loki/otlp
       otlp:
         endpoint: jaeger:4317
         tls:
@@ -159,14 +166,18 @@ data:
         endpoint: "0.0.0.0:9464"
     service:
       pipelines:
+        logs:
+          receivers: [filelog]
+          processors: [batch]
+          exporters: [otlphttp]
         metrics:
           receivers: [otlp]
           processors: [batch]
-          exporters: [debug, prometheus] # Export metrics to Prometheus
+          exporters: [prometheus] # Export metrics to Prometheus
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [debug, otlp]
+          exporters: [otlp]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
