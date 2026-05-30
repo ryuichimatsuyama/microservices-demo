@@ -149,6 +149,10 @@ data:
     processors:
       batch:
     exporters:
+      otlp:
+        endpoint: jaeger:4317
+        tls:
+          insecure: true
       debug:
         verbosity: detailed
       prometheus:
@@ -162,7 +166,7 @@ data:
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [debug]
+          exporters: [debug, otlp]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
