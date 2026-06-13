@@ -28,7 +28,13 @@ target "frontend" {
   tags = ["ghcr.io/ryuichimatsuyama/frontend:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/frontend:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/frontend:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -40,7 +46,13 @@ target "cartservice" {
   tags = ["ghcr.io/ryuichimatsuyama/cartservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/cartservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/cartservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -52,7 +64,13 @@ target "productcatalogservice" {
   tags = ["ghcr.io/ryuichimatsuyama/productcatalogservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/productcatalogservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/productcatalogservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -64,7 +82,13 @@ target "currencyservice" {
   tags = ["ghcr.io/ryuichimatsuyama/currencyservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/currencyservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/currencyservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -76,7 +100,13 @@ target "paymentservice" {
   tags = ["ghcr.io/ryuichimatsuyama/paymentservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/paymentservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/paymentservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -88,7 +118,13 @@ target "shippingservice" {
   tags = ["ghcr.io/ryuichimatsuyama/shippingservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/shippingservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/shippingservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -100,7 +136,13 @@ target "emailservice" {
   tags = ["ghcr.io/ryuichimatsuyama/emailservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/emailservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/emailservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -112,7 +154,13 @@ target "checkoutservice" {
   tags = ["ghcr.io/ryuichimatsuyama/checkoutservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/checkoutservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/checkoutservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -124,7 +172,13 @@ target "recommendationservice" {
   tags = ["ghcr.io/ryuichimatsuyama/recommendationservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/recommendationservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/recommendationservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -136,7 +190,13 @@ target "adservice" {
   tags = ["ghcr.io/ryuichimatsuyama/adservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/adservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/adservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -148,7 +208,13 @@ target "shoppingassistantservice" {
   tags = ["ghcr.io/ryuichimatsuyama/shoppingassistantservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/shoppingassistantservice:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/shoppingassistantservice:cache,mode=max"
+  ]
 }
 
 # ----------------------
@@ -160,7 +226,13 @@ target "loadgenerator" {
   tags = ["ghcr.io/ryuichimatsuyama/loadgenerator:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
-  inherits = ["_common"]
+  cache-from = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/loadgenerator:cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=ghcr.io/ryuichimatsuyama/loadgenerator:cache,mode=max"
+  ]
 }
 
 target "_common" {
