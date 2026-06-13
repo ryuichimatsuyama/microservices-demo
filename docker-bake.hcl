@@ -35,7 +35,7 @@ target "frontend" {
 # Cart
 # ----------------------
 target "cartservice" {
-  context = "./src/cartservice"
+  context = "./src/cartservice/src"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/cartservice:${TAG}"]
 
