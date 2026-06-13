@@ -13,7 +13,7 @@ group "default" {
     "emailservice",
     "checkoutservice",
     "recommendationservice",
-    "adservice"
+    "adservice",
     "shoppingassistantservice",
     "loadgenerator"
   ]
