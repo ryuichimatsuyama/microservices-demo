@@ -60,6 +60,10 @@ securityContext:
   enable: true
 
 adService:
+  image:
+    registry: ghcr.io
+    repository: ryuichimatsuyama/adService
+    tag: 729dde976be148ca937c1afbef4f42814b7e9b45
   create: true
   name: adservice
   resources:
