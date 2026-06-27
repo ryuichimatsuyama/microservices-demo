@@ -61,7 +61,8 @@ securityContext:
 
 adService:
   image:
-    repository: ghcr.io/ryuichimatsuyama/adService
+    registry: ghcr.io
+    repository: ryuichimatsuyama/adService
     version: sha256:966462c0628e2bdd1d8c3e59f52b76a696cd82073f70ccf57d4bef3eb38cd714
   create: true
   name: adservice
