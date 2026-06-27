@@ -1,9 +1,3 @@
 {
-  "extends": ["config:best-practices"],
-  "packageRules": [
-    {
-      "matchDatasources": ["docker"],
-      "pinDigests": true
-    }
-  ]
+  "extends": ["config:best-practices"]
 }
