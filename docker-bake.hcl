@@ -244,3 +244,4 @@ target "_common" {
     "type=registry,ref=ghcr.io/ryuichimatsuyama/cache:latest,mode=max"
   ]
 }
+
