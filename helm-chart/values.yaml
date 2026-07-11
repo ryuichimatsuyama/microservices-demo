@@ -54,7 +54,7 @@ adService:
   image:
     registry: ghcr.io
     repository: ryuichimatsuyama/adservice
-    tag: f3b67a33c6acd76f7da6b94490afa23df17fea8a
+    tag: f5bb442cf4dcfb9d1c7419eb4a28064882f5f24f
   create: true
   name: adservice
   resources:
