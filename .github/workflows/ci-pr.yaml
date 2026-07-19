@@ -96,6 +96,7 @@ jobs:
         with:
           files: docker-bake.hcl
           targets: ${{ matrix.service }}
+          push: false
         env:
           TAG: ${{ github.sha }}
       - name: Run Trivy vulnerability scanner
