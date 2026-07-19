@@ -90,6 +90,7 @@ jobs:
           push: false
           load: true
           targets: ${{ matrix.service }}
+          platforms = ["linux/amd64"]
         env:
           TAG: ${{ github.sha }}
       - name: Run Trivy vulnerability scanner
