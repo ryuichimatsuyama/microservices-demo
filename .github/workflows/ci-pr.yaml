@@ -57,3 +57,47 @@ jobs:
       timeout-minutes: 10
       run: |
         dotnet test src/cartservice/
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        service:
+          - frontend
+          - cartservice
+          - checkoutservice
+          - productcatalogservice
+          - currencyservice
+          - paymentservice
+          - shippingservice
+          - emailservice
+          - recommendationservice
+          - adservice
+          - shoppingassistantservice
+          - loadgenerator
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # ■ Buildxセットアップ
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ■ buildx bake + push
+      - name: Build and push images
+        uses: docker/bake-action@v7
+        with:
+          files: docker-bake.hcl
+          push: false
+          load: true
+          targets: ${{ matrix.service }}
+        env:
+          TAG: ${{ github.sha }}
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'ghcr.io/ryuichimatsuyama/${{ matrix.service }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
