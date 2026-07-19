@@ -25,28 +25,92 @@ build:
   # https://skaffold.dev/docs/concepts/#image-repository-handling
   - image: emailservice
     context: src/emailservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/emailservice:latest
   - image: productcatalogservice
     context: src/productcatalogservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/productcatalogservice:latest
   - image: recommendationservice
     context: src/recommendationservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/recommendationservice:latest
   - image: shoppingassistantservice
     context: src/shoppingassistantservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/shoppingassistantservice:latest
   - image: shippingservice
     context: src/shippingservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/shippingservice:latest
   - image: checkoutservice
     context: src/checkoutservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/checkoutservice:latest
   - image: paymentservice
     context: src/paymentservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/paymentservice:latest
   - image: currencyservice
     context: src/currencyservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/currencyservice:latest
   - image: cartservice
     context: src/cartservice/src
     docker:
-      dockerfile: Dockerfile
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/cartservice:latest
   - image: frontend
     context: src/frontend
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/frontend:latest
   - image: adservice
     context: src/adservice
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/adservice:latest
   tagPolicy:
     gitCommit: {}
   local:
@@ -105,6 +169,12 @@ build:
   artifacts:
   - image: loadgenerator
     context: src/loadgenerator
+    docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          BUILDKIT_INLINE_CACHE: "1"
+        cacheFrom:
+          - ghcr.io/ryuichimatsuyama/microservices-demo/refs/pull/1/loadgenerator:latest
   local:
     useDockerCLI: true
     useBuildkit: true
