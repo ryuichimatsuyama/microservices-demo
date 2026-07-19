@@ -26,7 +26,6 @@ target "frontend" {
   context = "./src/frontend"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/frontend:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/frontend:cache"
@@ -44,7 +43,6 @@ target "cartservice" {
   context = "./src/cartservice/src"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/cartservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/cartservice:cache"
@@ -62,7 +60,6 @@ target "productcatalogservice" {
   context = "./src/productcatalogservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/productcatalogservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/productcatalogservice:cache"
@@ -79,7 +76,6 @@ target "productcatalogservice" {
 target "currencyservice" {
   context = "./src/currencyservice"
   dockerfile = "Dockerfile"
-  tags = ["ghcr.io/ryuichimatsuyama/currencyservice:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
@@ -98,7 +94,6 @@ target "paymentservice" {
   context = "./src/paymentservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/paymentservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/paymentservice:cache"
@@ -116,7 +111,6 @@ target "shippingservice" {
   context = "./src/shippingservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/shippingservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/shippingservice:cache"
@@ -134,7 +128,6 @@ target "emailservice" {
   context = "./src/emailservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/emailservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/emailservice:cache"
@@ -152,7 +145,6 @@ target "checkoutservice" {
   context = "./src/checkoutservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/checkoutservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/checkoutservice:cache"
@@ -170,7 +162,6 @@ target "recommendationservice" {
   context = "./src/recommendationservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/recommendationservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/recommendationservice:cache"
@@ -188,7 +179,6 @@ target "adservice" {
   context = "./src/adservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/adservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/adservice:cache"
@@ -206,7 +196,6 @@ target "shoppingassistantservice" {
   context = "./src/shoppingassistantservice"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/shoppingassistantservice:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/shoppingassistantservice:cache"
@@ -224,7 +213,6 @@ target "loadgenerator" {
   context = "./src/loadgenerator"
   dockerfile = "Dockerfile"
   tags = ["ghcr.io/ryuichimatsuyama/loadgenerator:${TAG}"]
-  platforms = ["linux/amd64", "linux/arm64"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/loadgenerator:cache"

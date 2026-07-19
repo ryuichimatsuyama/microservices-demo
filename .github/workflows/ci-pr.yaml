@@ -99,12 +99,13 @@ jobs:
         with:
           files: docker-bake.hcl
           targets: ${{ matrix.service }}
+          load: true
         env:
           TAG: ${{ github.sha }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'ghcr.io/ryuichimatsuyama/${{ matrix.service }}:cache'
+          image-ref: 'ghcr.io/ryuichimatsuyama/${{ matrix.service }}:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
