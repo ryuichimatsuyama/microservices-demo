@@ -76,7 +76,7 @@ target "productcatalogservice" {
 target "currencyservice" {
   context = "./src/currencyservice"
   dockerfile = "Dockerfile"
-  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["ghcr.io/ryuichimatsuyama/currencyservice:${TAG}"]
 
   cache-from = [
     "type=registry,ref=ghcr.io/ryuichimatsuyama/currencyservice:cache"
