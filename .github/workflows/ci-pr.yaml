@@ -60,6 +60,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         service:
@@ -96,7 +99,6 @@ jobs:
         with:
           files: docker-bake.hcl
           targets: ${{ matrix.service }}
-          push: false
         env:
           TAG: ${{ github.sha }}
       - name: Run Trivy vulnerability scanner
