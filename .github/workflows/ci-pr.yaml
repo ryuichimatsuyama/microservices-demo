@@ -106,7 +106,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'ghcr.io/ryuichimatsuyama/${{ matrix.service }}:${{ github.sha }}'
-          format: 'github'
+          format: 'table'
           output: 'dependency-results.sbom.json'
           exit-code: '1'
           ignore-unfixed: true
