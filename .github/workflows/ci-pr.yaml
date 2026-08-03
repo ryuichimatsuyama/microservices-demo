@@ -107,7 +107,6 @@ jobs:
         with:
           image-ref: 'ghcr.io/ryuichimatsuyama/${{ matrix.service }}:${{ github.sha }}'
           format: 'table'
-          output: 'dependency-results.sbom.json'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
