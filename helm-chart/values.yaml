@@ -17,9 +17,9 @@
 # Declare variables to be passed into your templates.
 
 images:
-  repository: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo
+  repository: ghcr.io/ryuichimatsuyama
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "eded9e042c041d89cf511935f67fcf2bdcf5643a"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
