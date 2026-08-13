@@ -17,9 +17,9 @@
 # Declare variables to be passed into your templates.
 
 images:
-  repository: ghcr.io/ryuichimatsuyama
+  repository: ghcr.io/ryuichimatsuyama/adservice
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1641d83e40a7aa16ca735a16506b217486c04f9a"
+  tag: "eded9e042c041d89cf511935f67fcf2bdcf5643a"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
