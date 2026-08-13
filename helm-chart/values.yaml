@@ -19,7 +19,7 @@
 images:
   repository: ghcr.io/ryuichimatsuyama
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "eded9e042c041d89cf511935f67fcf2bdcf5643a"
+  tag: "1641d83e40a7aa16ca735a16506b217486c04f9a"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
