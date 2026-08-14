@@ -53,8 +53,8 @@ securityContext:
 adService:
   image:
     registry: ghcr.io
-    repository: ryuichimatsuyama/adservice
-    tag: f5bb442cf4dcfb9d1c7419eb4a28064882f5f24f
+    repository: adservice
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: adservice
   resources:
