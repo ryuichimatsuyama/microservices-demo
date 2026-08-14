@@ -65,6 +65,9 @@ adService:
       cpu: 300m
       memory: 300Mi
 cartService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: cartservice
   resources:
@@ -75,6 +78,9 @@ cartService:
       cpu: 300m
       memory: 256Mi
 checkoutService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: checkoutservice
   resources:
@@ -85,6 +91,9 @@ checkoutService:
       cpu: 200m
       memory: 128Mi
 currencyService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: currencyservice
   resources:
@@ -95,6 +104,9 @@ currencyService:
       cpu: 200m
       memory: 256Mi
 emailService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: emailservice
   resources:
@@ -105,6 +117,9 @@ emailService:
       cpu: 200m
       memory: 128Mi
 frontend:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: frontend
   externalService: true
@@ -129,6 +144,9 @@ frontend:
       cpu: 200m
       memory: 128Mi
 loadGenerator:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: loadgenerator
   checkFrontendInitContainer: true
@@ -140,6 +158,9 @@ loadGenerator:
       cpu: 500m
       memory: 512Mi
 paymentService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: paymentservice
   resources:
@@ -150,6 +171,9 @@ paymentService:
       cpu: 200m
       memory: 256Mi
 productCatalogService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: productcatalogservice
   # Specifies an extra latency to any request on productcatalogservice, by default no extra latency.
@@ -162,6 +186,9 @@ productCatalogService:
       cpu: 200m
       memory: 128Mi
 recommendationService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: recommendationservice
   resources:
@@ -172,6 +199,9 @@ recommendationService:
       cpu: 200m
       memory: 450Mi
 shippingService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: shippingservice
   resources:
@@ -182,6 +212,9 @@ shippingService:
       cpu: 200m
       memory: 128Mi
 cartDatabase:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   # Specifies the type of the cartservice's database, could be either redis or spanner.
   type: redis
   connectionString: "redis-cart:6379"
@@ -199,5 +232,8 @@ cartDatabase:
 # @TODO: This service is not currently available in Helm.
 # https://github.com/GoogleCloudPlatform/microservices-demo/tree/main/kustomize/components/shopping-assistant
 shoppingAssistantService:
+  image:
+    repository: ""
+    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: false
   name: shoppingassistantservice
