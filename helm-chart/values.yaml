@@ -66,7 +66,7 @@ adService:
       memory: 300Mi
 cartService:
   image:
-    repository: ""
+    repository: "cartservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: cartservice
@@ -79,7 +79,7 @@ cartService:
       memory: 256Mi
 checkoutService:
   image:
-    repository: ""
+    repository: "checkoutservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: checkoutservice
@@ -92,7 +92,7 @@ checkoutService:
       memory: 128Mi
 currencyService:
   image:
-    repository: ""
+    repository: "currencyservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: currencyservice
@@ -105,7 +105,7 @@ currencyService:
       memory: 256Mi
 emailService:
   image:
-    repository: ""
+    repository: "emailservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: emailservice
@@ -118,7 +118,7 @@ emailService:
       memory: 128Mi
 frontend:
   image:
-    repository: ""
+    repository: "frontend"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: frontend
@@ -145,7 +145,7 @@ frontend:
       memory: 128Mi
 loadGenerator:
   image:
-    repository: ""
+    repository: "loadgenerator"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: loadgenerator
@@ -159,7 +159,7 @@ loadGenerator:
       memory: 512Mi
 paymentService:
   image:
-    repository: ""
+    repository: "paymentservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: paymentservice
@@ -172,7 +172,7 @@ paymentService:
       memory: 256Mi
 productCatalogService:
   image:
-    repository: ""
+    repository: "productcatalogservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: productcatalogservice
@@ -187,7 +187,7 @@ productCatalogService:
       memory: 128Mi
 recommendationService:
   image:
-    repository: ""
+    repository: "recommendationservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: recommendationservice
@@ -200,7 +200,7 @@ recommendationService:
       memory: 450Mi
 shippingService:
   image:
-    repository: ""
+    repository: "shippingservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: true
   name: shippingservice
@@ -212,9 +212,6 @@ shippingService:
       cpu: 200m
       memory: 128Mi
 cartDatabase:
-  image:
-    repository: ""
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   # Specifies the type of the cartservice's database, could be either redis or spanner.
   type: redis
   connectionString: "redis-cart:6379"
@@ -233,7 +230,7 @@ cartDatabase:
 # https://github.com/GoogleCloudPlatform/microservices-demo/tree/main/kustomize/components/shopping-assistant
 shoppingAssistantService:
   image:
-    repository: ""
+    repository: "shoppingassistantservice"
     tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
   create: false
   name: shoppingassistantservice
