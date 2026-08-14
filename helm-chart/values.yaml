@@ -19,7 +19,7 @@
 images:
   repository: ghcr.io/ryuichimatsuyama
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1641d83e40a7aa16ca735a16506b217486c04f9a"
+  tag: "134a1accc02d09b46273be719e2657e9859c9be0"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
@@ -67,7 +67,7 @@ adService:
 cartService:
   image:
     repository: "cartservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: cartservice
   resources:
@@ -80,7 +80,7 @@ cartService:
 checkoutService:
   image:
     repository: "checkoutservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: checkoutservice
   resources:
@@ -93,7 +93,7 @@ checkoutService:
 currencyService:
   image:
     repository: "currencyservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: currencyservice
   resources:
@@ -106,7 +106,7 @@ currencyService:
 emailService:
   image:
     repository: "emailservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: emailservice
   resources:
@@ -119,7 +119,7 @@ emailService:
 frontend:
   image:
     repository: "frontend"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: frontend
   externalService: true
@@ -146,7 +146,7 @@ frontend:
 loadGenerator:
   image:
     repository: "loadgenerator"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: loadgenerator
   checkFrontendInitContainer: true
@@ -160,7 +160,7 @@ loadGenerator:
 paymentService:
   image:
     repository: "paymentservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: paymentservice
   resources:
@@ -173,7 +173,7 @@ paymentService:
 productCatalogService:
   image:
     repository: "productcatalogservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: productcatalogservice
   # Specifies an extra latency to any request on productcatalogservice, by default no extra latency.
@@ -188,7 +188,7 @@ productCatalogService:
 recommendationService:
   image:
     repository: "recommendationservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: recommendationservice
   resources:
@@ -201,7 +201,7 @@ recommendationService:
 shippingService:
   image:
     repository: "shippingservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: true
   name: shippingservice
   resources:
@@ -231,6 +231,6 @@ cartDatabase:
 shoppingAssistantService:
   image:
     repository: "shoppingassistantservice"
-    tag: 1641d83e40a7aa16ca735a16506b217486c04f9a
+    tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: false
   name: shoppingassistantservice
