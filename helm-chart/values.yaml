@@ -160,7 +160,7 @@ loadGenerator:
 paymentService:
   image:
     repository: "paymentservice"
-    tag: 134a1accc02d09b46273be719e2657e9859c9be0
+    tag: 88d32716a9b55a0cd3caecef92d677184363ed47
   create: true
   name: paymentservice
   resources:
