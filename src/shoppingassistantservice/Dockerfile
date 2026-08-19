@@ -15,7 +15,7 @@
 # Define a default value so it's not empty if the builder fails to provide it
 ARG BUILDPLATFORM=linux/amd64
 
-FROM --platform=$BUILDPLATFORM python:3.14.6-slim@sha256:b877e50bd90de10af8d82c57a022fc2e0dc731c5320d762a27986facfc3355c1 AS base
+FROM --platform=$BUILDPLATFORM python:3.14.6-slim@sha256:7bec7ddcddeff7975d6ba9b4be7dd6f6b2f55e7491539145e2978f7f97ce9144 AS base
 
 FROM base AS builder
 
