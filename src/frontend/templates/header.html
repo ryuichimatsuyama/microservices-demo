@@ -44,6 +44,25 @@
     {{ else }}
     <link rel='shortcut icon' type='image/x-icon' href='{{ $.baseUrl }}/static/favicon.ico' />
     {{ end }}
+
+    <!-- CloudWatch RUM -->
+    <script>
+        (function(n,i,v,r,s,c,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.head.getElementsByTagName('script')[0]);})(
+            'cwr',
+            'f94441e0-93f7-4fb6-bd31-9a3765faa5d8',
+            '1.0.0',
+            'ap-northeast-1',
+            'https://client.rum.us-east-1.amazonaws.com/1.19.0/cwr.js',
+            {
+            sessionSampleRate: 1 ,
+            endpoint: "https://dataplane.rum.ap-northeast-1.amazonaws.com" ,
+            telemetries: ["performance","errors","http"] ,
+            allowCookies: true ,
+            enableXRay: false ,
+            signing: true // If you have a public resource policy and wish to send unsigned requests please set this to false
+            }
+        );
+    </script>
 </head>
 
 <body>
