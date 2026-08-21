@@ -164,6 +164,8 @@ data:
         verbosity: detailed
       prometheus:
         endpoint: "0.0.0.0:9464"
+      awsxray:
+        region: ap-northeast-1
     service:
       pipelines:
         logs:
@@ -177,7 +179,7 @@ data:
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [otlp]
+          exporters: [otlp, awsxray]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
