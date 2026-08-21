@@ -15,7 +15,7 @@
 # Define a default value so it's not empty if the builder fails to provide it
 ARG BUILDPLATFORM=linux/amd64
 
-FROM --platform=$BUILDPLATFORM python:3.10.21-slim@sha256:a78e4529630cfe8c5199cafd6e0c28ee1579a13f86274396d8b6b2d80367aa3a AS base
+FROM --platform=$BUILDPLATFORM python:3.14.6-slim@sha256:7bec7ddcddeff7975d6ba9b4be7dd6f6b2f55e7491539145e2978f7f97ce9144 AS base
 
 FROM base AS builder
 
@@ -28,6 +28,12 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 FROM base
+
+# Debian security updates
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # Enable unbuffered logging
 ENV PYTHONUNBUFFERED=1
 
