@@ -55,10 +55,11 @@
             'https://client.rum.us-east-1.amazonaws.com/1.19.0/cwr.js',
             {
             sessionSampleRate: 1 ,
+            identityPoolId: "ap-northeast-1:655528e3-a5f0-43b7-8407-d573ec112c78" ,
             endpoint: "https://dataplane.rum.ap-northeast-1.amazonaws.com" ,
             telemetries: ["performance","errors","http"] ,
             allowCookies: true ,
-            enableXRay: false ,
+            enableXRay: true ,
             signing: true // If you have a public resource policy and wish to send unsigned requests please set this to false
             }
         );
