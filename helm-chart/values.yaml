@@ -119,7 +119,7 @@ emailService:
 frontend:
   image:
     repository: "frontend"
-    tag: 709698db49fddf2728680b3662f0f52d3b949a0f
+    tag: 2a236bda686846ca38ac53234434eab00e53c883
   create: true
   name: frontend
   externalService: true
