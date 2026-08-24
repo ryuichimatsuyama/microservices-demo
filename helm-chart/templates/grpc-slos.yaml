@@ -1,0 +1,47 @@
+{{- range .Values.slos.grpcServices }}
+{{- if .enabled }}
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: {{ .name }}-availability
+  namespace: monitoring
+spec:
+  service: {{ .name }}
+  labels:
+    team: platform
+
+  slos:
+    - name: availability
+      objective: {{ .objective }}
+      description: "{{ .name }} gRPC availability"
+
+      sli:
+        events:
+          errorQuery: |
+            (
+              sum(rate(
+                istio_requests_total{
+                  reporter="source",
+                  destination_workload="{{ .name }}",
+                  request_protocol="grpc",
+                  grpc_response_status!="0"
+                }[{{ "{{.window}}" }}]
+              ))
+            ) or vector(0)
+
+          totalQuery: |
+            sum(rate(
+              istio_requests_total{
+                reporter="source",
+                destination_workload="{{ .name }}",
+                request_protocol="grpc"
+              }[{{ "{{.window}}" }}]
+            ))
+
+      alerting:
+        name: {{ .name | title | replace "-" "" }}Availability
+        labels:
+          category: availability
+---
+{{- end }}
+{{- end }}

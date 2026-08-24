@@ -32,7 +32,7 @@ networkPolicies:
   create: false
 sidecars:
   # Specifies if the Sidecars are created or not. If true, one fine granular Sidecar per app is created.
-  create: true
+  create: false
 authorizationPolicies:
   # Specifies if the AuthorizationPolicies are created or not. If true, one fine granular AuthorizationPolicy per app is created.
   create: false
@@ -117,6 +117,10 @@ emailService:
       cpu: 200m
       memory: 128Mi
 frontend:
+  slo:
+    enabled: true
+    protocol: http
+    objective: 99.9
   image:
     repository: "frontend"
     tag: bc3a1b44f5d115d3d92cdf6dd5a0e9a365a7ba96
@@ -234,3 +238,41 @@ shoppingAssistantService:
     tag: 134a1accc02d09b46273be719e2657e9859c9be0
   create: false
   name: shoppingassistantservice
+
+slos:
+  grpcServices:
+    - name: adservice
+      enabled: true
+      objective: 99.9
+
+    - name: cartservice
+      enabled: true
+      objective: 99.9
+
+    - name: checkoutservice
+      enabled: true
+      objective: 99.9
+
+    - name: currencyservice
+      enabled: true
+      objective: 99.9
+
+    - name: emailservice
+      enabled: true
+      objective: 99.9
+
+    - name: paymentservice
+      enabled: true
+      objective: 99.9
+
+    - name: productcatalogservice
+      enabled: true
+      objective: 99.9
+
+    - name: recommendationservice
+      enabled: true
+      objective: 99.9
+
+    - name: shippingservice
+      enabled: true
+      objective: 99.9

@@ -1,0 +1,40 @@
+{{- if and .Values.frontend.create .Values.frontend.slo.enabled }}
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: {{ .Values.frontend.name }}-availability
+  namespace: monitoring
+spec:
+  service: {{ .Values.frontend.name }}
+  labels:
+    team: platform
+  slos:
+    - name: availability
+      objective: {{ .Values.frontend.slo.objective }}
+      description: "{{ .Values.frontend.name }} HTTP availability"
+      sli:
+        events:
+          errorQuery: |
+            (
+              sum(rate(
+                istio_requests_total{
+                  reporter="destination",
+                  destination_workload="{{ .Values.frontend.name }}",
+                  request_protocol="http",
+                  response_code=~"5.."
+                }[{{ "{{.window}}" }}]
+              ))
+            ) or vector(0)
+          totalQuery: |
+            sum(rate(
+              istio_requests_total{
+                reporter="destination",
+                destination_workload="{{ .Values.frontend.name }}",
+                request_protocol="http"
+              }[{{ "{{.window}}" }}]
+            ))
+      alerting:
+        name: FrontendAvailability
+        labels:
+          category: availability
+{{- end }}
