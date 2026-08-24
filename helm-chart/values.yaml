@@ -32,7 +32,7 @@ networkPolicies:
   create: false
 sidecars:
   # Specifies if the Sidecars are created or not. If true, one fine granular Sidecar per app is created.
-  create: false
+  create: true
 authorizationPolicies:
   # Specifies if the AuthorizationPolicies are created or not. If true, one fine granular AuthorizationPolicy per app is created.
   create: false
