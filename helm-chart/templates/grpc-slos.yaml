@@ -5,6 +5,8 @@ kind: PrometheusServiceLevel
 metadata:
   name: {{ .name }}-availability
   namespace: monitoring
+  labels:
+    release: monitoring
 spec:
   service: {{ .name }}
   labels:
