@@ -1,19 +1,24 @@
 {{- if and .Values.frontend.create .Values.frontend.slo.enabled }}
+
 apiVersion: sloth.slok.dev/v1
 kind: PrometheusServiceLevel
 metadata:
-  name: {{ .Values.frontend.name }}-availability
+  name: {{ .Values.frontend.name }}-slo
   namespace: monitoring
   labels:
     release: monitoring
+
 spec:
   service: {{ .Values.frontend.name }}
+
   labels:
     team: platform
+
   slos:
     - name: availability
       objective: {{ .Values.frontend.slo.objective }}
       description: "{{ .Values.frontend.name }} HTTP availability"
+
       sli:
         events:
           errorQuery: |
@@ -27,6 +32,7 @@ spec:
                 }[{{ "{{.window}}" }}]
               ))
             ) or vector(0)
+
           totalQuery: |
             sum(rate(
               istio_requests_total{
@@ -35,8 +41,50 @@ spec:
                 request_protocol="http"
               }[{{ "{{.window}}" }}]
             ))
+
       alerting:
         name: FrontendAvailability
         labels:
           category: availability
+
+    - name: latency
+      objective: {{ .Values.frontend.slo.latencyObjective }}
+      description: "{{ .Values.frontend.name }} HTTP latency under {{ .Values.frontend.slo.latencyThresholdMs }}ms"
+
+      sli:
+        events:
+          errorQuery: |
+            (
+              sum(rate(
+                istio_request_duration_milliseconds_count{
+                  reporter="destination",
+                  destination_workload="{{ .Values.frontend.name }}",
+                  request_protocol="http"
+                }[{{ "{{.window}}" }}]
+              ))
+              -
+              sum(rate(
+                istio_request_duration_milliseconds_bucket{
+                  reporter="destination",
+                  destination_workload="{{ .Values.frontend.name }}",
+                  request_protocol="http",
+                  le="{{ .Values.frontend.slo.latencyThresholdMs }}"
+                }[{{ "{{.window}}" }}]
+              ))
+            ) or vector(0)
+
+          totalQuery: |
+            sum(rate(
+              istio_request_duration_milliseconds_count{
+                reporter="destination",
+                destination_workload="{{ .Values.frontend.name }}",
+                request_protocol="http"
+              }[{{ "{{.window}}" }}]
+            ))
+
+      alerting:
+        name: FrontendLatency
+        labels:
+          category: latency
+
 {{- end }}

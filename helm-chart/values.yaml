@@ -119,8 +119,9 @@ emailService:
 frontend:
   slo:
     enabled: true
-    protocol: http
     objective: 99.9
+    latencyObjective: 99
+    latencyThresholdMs: 500
   image:
     repository: "frontend"
     tag: bc3a1b44f5d115d3d92cdf6dd5a0e9a365a7ba96
