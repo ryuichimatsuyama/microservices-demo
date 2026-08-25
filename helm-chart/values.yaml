@@ -244,36 +244,54 @@ slos:
   grpcServices:
     - name: adservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: cartservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: checkoutservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: currencyservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: emailservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: paymentservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: productcatalogservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: recommendationservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500
 
     - name: shippingservice
       enabled: true
-      objective: 99.9
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: 500

@@ -1,20 +1,23 @@
 {{- range .Values.slos.grpcServices }}
 {{- if .enabled }}
+
 apiVersion: sloth.slok.dev/v1
 kind: PrometheusServiceLevel
 metadata:
-  name: {{ .name }}-availability
+  name: {{ .name }}-slo
   namespace: monitoring
   labels:
     release: monitoring
+
 spec:
   service: {{ .name }}
+
   labels:
     team: platform
 
   slos:
     - name: availability
-      objective: {{ .objective }}
+      objective: {{ .availabilityObjective }}
       description: "{{ .name }} gRPC availability"
 
       sli:
@@ -44,6 +47,47 @@ spec:
         name: {{ .name | title | replace "-" "" }}Availability
         labels:
           category: availability
+
+    - name: latency
+      objective: {{ .latencyObjective }}
+      description: "{{ .name }} gRPC latency under {{ .latencyThresholdMs }}ms"
+
+      sli:
+        events:
+          errorQuery: |
+            (
+              sum(rate(
+                istio_request_duration_milliseconds_count{
+                  reporter="source",
+                  destination_workload="{{ .name }}",
+                  request_protocol="grpc"
+                }[{{ "{{.window}}" }}]
+              ))
+              -
+              sum(rate(
+                istio_request_duration_milliseconds_bucket{
+                  reporter="source",
+                  destination_workload="{{ .name }}",
+                  request_protocol="grpc",
+                  le="{{ .latencyThresholdMs }}"
+                }[{{ "{{.window}}" }}]
+              ))
+            ) or vector(0)
+
+          totalQuery: |
+            sum(rate(
+              istio_request_duration_milliseconds_count{
+                reporter="source",
+                destination_workload="{{ .name }}",
+                request_protocol="grpc"
+              }[{{ "{{.window}}" }}]
+            ))
+
+      alerting:
+        name: {{ .name | title | replace "-" "" }}Latency
+        labels:
+          category: latency
+
 ---
 {{- end }}
 {{- end }}
