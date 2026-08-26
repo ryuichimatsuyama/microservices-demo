@@ -179,7 +179,7 @@ data:
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [otlp]
+          exporters: [otlp, debug]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
