@@ -419,9 +419,9 @@ spec:
             host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
 
       timeout: 500ms
-
       retries:
         attempts: 2
         perTryTimeout: 200ms
-        retryOn: connect-failure,refused-stream,unavailable,cancelled
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded
+        retryIgnorePreviousHosts: true
 {{- end }}
