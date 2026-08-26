@@ -77,6 +77,7 @@ cartService:
     limits:
       cpu: 300m
       memory: 256Mi
+  replicas: 2
 checkoutService:
   image:
     repository: "checkoutservice"

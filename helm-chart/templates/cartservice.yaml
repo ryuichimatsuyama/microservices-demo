@@ -33,6 +33,7 @@ metadata:
   labels:
     app: {{ .Values.cartService.name }}
 spec:
+  replicas: {{ .Values.cartService.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.cartService.name }}
@@ -402,4 +403,25 @@ spec:
     name: tcp-redis
     protocol: TCP
 {{- end }}
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.cartService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+
+      timeout: 500ms
+
+      retries:
+        attempts: 2
+        perTryTimeout: 200ms
+        retryOn: connect-failure,refused-stream,unavailable,cancelled
 {{- end }}
