@@ -121,7 +121,7 @@ frontend:
     enabled: true
     objective: 99.9
     latencyObjective: 99
-    latencyThresholdMs: 500
+    latencyThresholdMs: "500.0"
   image:
     repository: "frontend"
     tag: bc3a1b44f5d115d3d92cdf6dd5a0e9a365a7ba96
@@ -246,53 +246,53 @@ slos:
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: cartservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: checkoutservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: currencyservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: emailservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: paymentservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: productcatalogservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: recommendationservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 
     - name: shippingservice
       enabled: true
       availabilityObjective: 99.9
       latencyObjective: 99
-      latencyThresholdMs: 500
+      latencyThresholdMs: "500.0"
 istioRevision: 1-30
