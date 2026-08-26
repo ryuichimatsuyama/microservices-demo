@@ -38,7 +38,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ .Release.Namespace }}
-  {{- if .istioRevision }}
+  {{- if .Values.istioRevision }}
   labels:
-    istio.io/rev: {{ .istioRevision | quote }}
+    istio.io/rev: {{ .Values.istioRevision | quote }}
   {{- end }}
