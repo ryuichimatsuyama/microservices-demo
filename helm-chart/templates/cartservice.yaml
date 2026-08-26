@@ -424,4 +424,24 @@ spec:
         perTryTimeout: 200ms
         retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded
         retryIgnorePreviousHosts: true
+{{- if .Values.cartService.outlierDetection.enabled }}
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: {{ .Values.cartService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+    outlierDetection:
+      splitExternalLocalOriginErrors: true
+      consecutiveLocalOriginFailures: {{ .Values.cartService.outlierDetection.consecutiveLocalOriginFailures }}
+      interval: {{ .Values.cartService.outlierDetection.interval }}
+      baseEjectionTime: {{ .Values.cartService.outlierDetection.baseEjectionTime }}
+      maxEjectionPercent: {{ .Values.cartService.outlierDetection.maxEjectionPercent }}
+{{- end }}
 {{- end }}

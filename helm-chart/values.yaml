@@ -78,6 +78,12 @@ cartService:
       cpu: 300m
       memory: 256Mi
   replicas: 2
+  outlierDetection:
+    enabled: true
+    consecutiveLocalOriginFailures: 1
+    interval: 1s
+    baseEjectionTime: 30s
+    maxEjectionPercent: 50
 checkoutService:
   image:
     repository: "checkoutservice"
