@@ -421,7 +421,7 @@ spec:
       timeout: 500ms
       retries:
         attempts: 2
-        perTryTimeout: 100ms
+        perTryTimeout: 200ms
         retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded
         retryIgnorePreviousHosts: true
 {{- if .Values.cartService.outlierDetection.enabled }}
