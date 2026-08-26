@@ -33,3 +33,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec: {}
 {{- end }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  {{- if .istioRevision }}
+  labels:
+    istio.io/rev: {{ .istioRevision | quote }}
+  {{- end }}

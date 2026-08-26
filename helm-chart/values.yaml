@@ -295,3 +295,4 @@ slos:
       availabilityObjective: 99.9
       latencyObjective: 99
       latencyThresholdMs: 500
+istioRevision: 1-30
