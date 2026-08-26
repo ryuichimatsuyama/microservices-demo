@@ -157,7 +157,7 @@ data:
       otlphttp:
         endpoint: loki/otlp
       otlp:
-        endpoint: jaeger:4317
+        endpoint: jaeger.monitoring.svc.cluster.local:4317
         tls:
           insecure: true
       debug:
@@ -179,7 +179,7 @@ data:
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [otlp, awsxray]
+          exporters: [otlp]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
