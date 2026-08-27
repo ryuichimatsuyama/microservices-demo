@@ -39,6 +39,7 @@ ENV PYTHONUNBUFFERED=1
 ENV ENABLE_PROFILER=1
 
 RUN apk update \
+    && apk upgrade --no-cache \
     && apk add --no-cache libstdc++ \
     && rm -rf /var/cache/apk/*
 
@@ -47,6 +48,14 @@ WORKDIR /email_server
 # Grab packages from builder
 COPY --from=builder /usr/local/lib/python3.14/ /usr/local/lib/python3.14/
 
+# Remove pip from production image
+RUN rm -rf \
+    /usr/local/lib/python3.14/site-packages/pip \
+    /usr/local/lib/python3.14/site-packages/pip-*.dist-info \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.14
+    
 # Add the application
 COPY . .
 
