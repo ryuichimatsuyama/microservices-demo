@@ -131,7 +131,7 @@ frontend:
     latencyThresholdMs: "500.0"
   image:
     repository: "frontend"
-    tag: b3631cd8ed50635590d430a06451f75f592610b8
+    tag: 09821880a58dc85a2daa79de4cd3da87bbaf8eee
   create: true
   name: frontend
   externalService: true
