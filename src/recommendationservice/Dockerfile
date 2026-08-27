@@ -23,7 +23,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 RUN apk update \
-    && apk upgrade --no-cache \
     && apk add --no-cache g++ linux-headers \
     && rm -rf /var/cache/apk/*
 
@@ -37,6 +36,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 RUN apk update \
+    && apk upgrade --no-cache \
     && apk add --no-cache libstdc++ \
     && rm -rf /var/cache/apk/*
 
@@ -53,7 +53,7 @@ RUN rm -rf \
     /usr/local/bin/pip \
     /usr/local/bin/pip3 \
     /usr/local/bin/pip3.14
-    
+
 # Add the application
 COPY . .
 
