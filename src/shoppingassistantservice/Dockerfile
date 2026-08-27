@@ -20,7 +20,7 @@ FROM --platform=$BUILDPLATFORM python:3.14.7-slim@sha256:ce40764625a4ff50df35482
 FROM base AS builder
 
 RUN apt-get -qq update \
-    && apk upgrade --no-cache \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends g++ \
     && rm -rf /var/lib/apt/lists/*
 
