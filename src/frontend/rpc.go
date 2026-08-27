@@ -60,8 +60,6 @@ func (fe *frontendServer) getCart(ctx context.Context, userID string) ([]*pb.Car
 		err  error
 	}
 
-	// 2本のGetCart専用context。
-	// どちらか成功したらcancelして残りのRPCを止める。
 	hedgeCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -74,56 +72,51 @@ func (fe *frontendServer) getCart(ctx context.Context, userID string) ([]*pb.Car
 			&pb.GetCartRequest{UserId: userID},
 		)
 
-		results <- result{
-			resp: resp,
-			err:  err,
+		select {
+		case results <- result{resp: resp, err: err}:
+		case <-hedgeCtx.Done():
 		}
 	}
 
 	// 1本目
 	go call()
 
+	launched := 1
+	completed := 0
+
 	timer := time.NewTimer(50 * time.Millisecond)
 	defer timer.Stop()
 
-	attempts := 1
-
-	// 1本目が50ms以内に成功すればhedgeしない。
-	select {
-	case r := <-results:
-		if r.err == nil {
-			cancel()
-			return r.resp.GetItems(), nil
-		}
-
-		// 1本目がすぐ失敗した場合も2本目を試す。
-		go call()
-		attempts++
-
-	case <-timer.C:
-		// 50ms経過しても返らないのでhedge開始。
-		go call()
-		attempts++
-
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	}
-
 	var firstErr error
 
-	for i := 0; i < attempts; i++ {
+	for completed < launched {
 		select {
 		case r := <-results:
-			if r.err == nil {
-				// 勝ったRPCの結果を採用。
-				// まだ実行中のもう片方を即cancel。
-				cancel()
+			completed++
 
+			if r.err == nil {
+				// 最初に成功したレスポンスを採用し、
+				// 残っているRPCをキャンセル
+				cancel()
 				return r.resp.GetItems(), nil
 			}
 
 			if firstErr == nil {
 				firstErr = r.err
+			}
+
+			// 1本目が50msを待たずに失敗した場合も
+			// hedgeを即発行
+			if launched == 1 {
+				go call()
+				launched++
+			}
+
+		case <-timer.C:
+			// 1本目がまだ完了していればhedgeしない
+			if launched == 1 && completed == 0 {
+				go call()
+				launched++
 			}
 
 		case <-ctx.Done():
