@@ -20,6 +20,7 @@ FROM --platform=$BUILDPLATFORM python:3.14.7-slim@sha256:ce40764625a4ff50df35482
 FROM base AS builder
 
 RUN apt-get -qq update \
+    && apk upgrade --no-cache \
     && apt-get install -y --no-install-recommends g++ \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,6 +37,14 @@ WORKDIR /shoppingassistantservice
 
 # Grab packages from builder
 COPY --from=builder /usr/local/lib/python3.14/ /usr/local/lib/python3.14/
+
+# Remove pip from production image
+RUN rm -rf \
+    /usr/local/lib/python3.14/site-packages/pip \
+    /usr/local/lib/python3.14/site-packages/pip-*.dist-info \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.14
 
 # Add the application
 COPY . .
