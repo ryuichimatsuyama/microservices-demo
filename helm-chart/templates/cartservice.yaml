@@ -417,13 +417,28 @@ spec:
     - route:
         - destination:
             host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
-
+      match:
+        - uri:
+            exact: /hipstershop.CartService/GetCart
       timeout: 500ms
       retries:
         attempts: 2
         perTryTimeout: 100ms
         retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded
-        retryIgnorePreviousHosts: true
+    - route:
+        - destination:
+            host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      match:
+        - uri:
+            exact: /hipstershop.CartService/AddItem
+      timeout: 1s
+      retries:
+        attempts: 1
+        perTryTimeout: 500ms
+        retryOn: connect-failure,refused-stream,unavailable
+    - route:
+      - destination:
+          host: cartservice.pr13.svc.cluster.local
 {{- if .Values.cartService.outlierDetection.enabled }}
 ---
 apiVersion: networking.istio.io/v1
