@@ -433,14 +433,13 @@ spec:
       match:
         - uri:
             exact: /hipstershop.CartService/AddItem
-      timeout: 1s
+      timeout: 500ms
       retries:
         attempts: 1
-        perTryTimeout: 500ms
+        perTryTimeout: 200ms
+        retryIgnorePreviousHosts: true
         retryOn: connect-failure,refused-stream,unavailable
-    - route:
-      - destination:
-          host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        backoff: 1ms
 {{- if .Values.cartService.outlierDetection.enabled }}
 ---
 apiVersion: networking.istio.io/v1
