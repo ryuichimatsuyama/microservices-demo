@@ -78,13 +78,8 @@ cartService:
       cpu: 300m
       memory: 256Mi
   replicas: 2
-  outlierDetection:
-    enabled: true
-    consecutiveLocalOriginFailures: 1
-    interval: 1s
-    baseEjectionTime: 30s
-    maxEjectionPercent: 50
 checkoutService:
+  replicas: 2
   image:
     repository: "checkoutservice"
     tag: b3631cd8ed50635590d430a06451f75f592610b8
@@ -170,6 +165,7 @@ loadGenerator:
       cpu: 500m
       memory: 512Mi
 paymentService:
+  replicas: 2
   image:
     repository: "paymentservice"
     tag: b3631cd8ed50635590d430a06451f75f592610b8
@@ -183,6 +179,7 @@ paymentService:
       cpu: 200m
       memory: 256Mi
 productCatalogService:
+  replicas: 2
   image:
     repository: "productcatalogservice"
     tag: b3631cd8ed50635590d430a06451f75f592610b8
@@ -302,4 +299,52 @@ slos:
       availabilityObjective: 99.9
       latencyObjective: 99
       latencyThresholdMs: "500.0"
+
 istioRevision: 1-30
+
+resilience:
+  defaults:
+    destinationRule:
+      enabled: true
+      loadBalancer: LEAST_REQUEST
+      outlierDetection:
+        splitExternalLocalOriginErrors: true
+        consecutiveLocalOriginFailures: 1
+        interval: 100ms
+        baseEjectionTime: 60s
+        maxEjectionPercent: 50
+
+    virtualService:
+      enabled: true
+      timeout: 500ms
+      retries:
+        attempts: 2
+        perTryTimeout: 100ms
+        retryOn: "5xx,reset,connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded"
+        retryIgnorePreviousHosts: true
+        backoff: 1ms
+
+  services:
+    cartservice:
+      enabled: true
+      destinationRule:
+        outlierDetection:
+          baseEjectionTime: 180s
+
+    productcatalogservice:
+      enabled: true
+
+    recommendationservice:
+      enabled: true
+
+    checkoutservice:
+      enabled: true
+      virtualService:
+        retries:
+          attempts: 1
+
+    paymentservice:
+      enabled: true
+      virtualService:
+        retries:
+          attempts: 1

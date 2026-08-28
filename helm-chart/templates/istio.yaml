@@ -1,0 +1,61 @@
+{{- range $name, $svc := .Values.resilience.services }}
+{{- if and $svc.enabled $.Values.resilience.defaults.destinationRule.enabled }}
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+  trafficPolicy:
+    loadBalancer:
+      simple: {{ $.Values.resilience.defaults.destinationRule.loadBalancer }}
+
+    outlierDetection:
+      splitExternalLocalOriginErrors: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.splitExternalLocalOriginErrors }}
+      consecutiveLocalOriginFailures: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.consecutiveLocalOriginFailures }}
+      interval: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.interval }}
+
+      {{- if and $svc.destinationRule $svc.destinationRule.outlierDetection $svc.destinationRule.outlierDetection.baseEjectionTime }}
+      baseEjectionTime: {{ $svc.destinationRule.outlierDetection.baseEjectionTime }}
+      {{- else }}
+      baseEjectionTime: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.baseEjectionTime }}
+      {{- end }}
+
+      maxEjectionPercent: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.maxEjectionPercent }}
+{{- end }}
+{{- if and $svc.enabled $.Values.resilience.defaults.virtualService.enabled }}
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  exportTo:
+    - "."
+  hosts:
+    - {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+  http:
+    - timeout: {{ $.Values.resilience.defaults.virtualService.timeout }}
+
+      retries:
+        {{- if and $svc.virtualService $svc.virtualService.retries $svc.virtualService.retries.attempts }}
+        attempts: {{ $svc.virtualService.retries.attempts }}
+        {{- else }}
+        attempts: {{ $.Values.resilience.defaults.virtualService.retries.attempts }}
+        {{- end }}
+
+        perTryTimeout: {{ $.Values.resilience.defaults.virtualService.retries.perTryTimeout }}
+        retryOn: {{ $.Values.resilience.defaults.virtualService.retries.retryOn | quote }}
+        retryIgnorePreviousHosts: {{ $.Values.resilience.defaults.virtualService.retries.retryIgnorePreviousHosts }}
+        backoff: {{ $.Values.resilience.defaults.virtualService.retries.backoff }}
+
+      route:
+        - destination:
+            host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+{{- end }}
+{{- end }}
