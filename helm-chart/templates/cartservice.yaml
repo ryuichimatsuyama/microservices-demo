@@ -424,7 +424,9 @@ spec:
       retries:
         attempts: 2
         perTryTimeout: 100ms
+        retryIgnorePreviousHosts: true
         retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded
+        backoff: 1ms
     - route:
         - destination:
             host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
@@ -438,7 +440,7 @@ spec:
         retryOn: connect-failure,refused-stream,unavailable
     - route:
       - destination:
-          host: cartservice.pr13.svc.cluster.local
+          host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
 {{- if .Values.cartService.outlierDetection.enabled }}
 ---
 apiVersion: networking.istio.io/v1
@@ -448,16 +450,14 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   host: {{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
-
   trafficPolicy:
     loadBalancer:
-      simple: ROUND_ROBIN
-
+      simple: LEAST_REQUEST
     outlierDetection:
       splitExternalLocalOriginErrors: true
-      consecutiveLocalOriginFailures: {{ .Values.cartService.outlierDetection.consecutiveLocalOriginFailures }}
-      interval: {{ .Values.cartService.outlierDetection.interval }}
-      baseEjectionTime: {{ .Values.cartService.outlierDetection.baseEjectionTime }}
-      maxEjectionPercent: {{ .Values.cartService.outlierDetection.maxEjectionPercent }}
+      consecutiveLocalOriginFailures: 1
+      interval: 100ms
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
 {{- end }}
 {{- end }}
