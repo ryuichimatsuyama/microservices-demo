@@ -195,6 +195,7 @@ productCatalogService:
       cpu: 200m
       memory: 128Mi
 recommendationService:
+  replicas: 2
   image:
     repository: "recommendationservice"
     tag: b3631cd8ed50635590d430a06451f75f592610b8
