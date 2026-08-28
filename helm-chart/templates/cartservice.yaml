@@ -425,7 +425,7 @@ spec:
         attempts: 2
         perTryTimeout: 100ms
         retryIgnorePreviousHosts: true
-        retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded,5xx,reset
         backoff: 1ms
     - route:
         - destination:
