@@ -40,15 +40,42 @@ spec:
     - {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
 
   http:
+    {{- if and $svc.virtualService $svc.virtualService.routes }}
+
+    {{- range $route := $svc.virtualService.routes }}
+    - name: {{ $route.name }}
+
+      match:
+        - uri:
+            exact: {{ $route.uri | quote }}
+
+      timeout: {{ $route.timeout }}
+
+      retries:
+        attempts: {{ $route.retries.attempts }}
+        perTryTimeout: {{ $route.retries.perTryTimeout }}
+        retryOn: {{ $route.retries.retryOn | quote }}
+        retryIgnorePreviousHosts: {{ $route.retries.retryIgnorePreviousHosts }}
+        backoff: {{ $route.retries.backoff }}
+
+      route:
+        - destination:
+            host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+    {{- end }}
+
+    # 上記methodにマッチしないCartService RPC用
+    - name: default
+      route:
+        - destination:
+            host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+    {{- else }}
+
+    # cartservice以外は共通設定
     - timeout: {{ $.Values.resilience.defaults.virtualService.timeout }}
 
       retries:
-        {{- if and $svc.virtualService $svc.virtualService.retries $svc.virtualService.retries.attempts }}
-        attempts: {{ $svc.virtualService.retries.attempts }}
-        {{- else }}
         attempts: {{ $.Values.resilience.defaults.virtualService.retries.attempts }}
-        {{- end }}
-
         perTryTimeout: {{ $.Values.resilience.defaults.virtualService.retries.perTryTimeout }}
         retryOn: {{ $.Values.resilience.defaults.virtualService.retries.retryOn | quote }}
         retryIgnorePreviousHosts: {{ $.Values.resilience.defaults.virtualService.retries.retryIgnorePreviousHosts }}
@@ -57,5 +84,7 @@ spec:
       route:
         - destination:
             host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+    {{- end }}
 {{- end }}
 {{- end }}

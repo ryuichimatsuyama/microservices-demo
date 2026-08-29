@@ -331,6 +331,27 @@ resilience:
       destinationRule:
         outlierDetection:
           baseEjectionTime: 180s
+      virtualService:
+        routes:
+          - name: get-cart
+            uri: /hipstershop.CartService/GetCart
+            timeout: 500ms
+            retries:
+              attempts: 2
+              perTryTimeout: 100ms
+              retryOn: "5xx,reset,connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded"
+              retryIgnorePreviousHosts: true
+              backoff: 1ms
+
+          - name: add-item
+            uri: /hipstershop.CartService/AddItem
+            timeout: 500ms
+            retries:
+              attempts: 1
+              perTryTimeout: 200ms
+              retryOn: "connect-failure,refused-stream,unavailable"
+              retryIgnorePreviousHosts: true
+              backoff: 1ms
 
     productcatalogservice:
       enabled: true
