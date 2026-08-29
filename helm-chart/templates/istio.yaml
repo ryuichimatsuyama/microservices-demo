@@ -71,20 +71,18 @@ spec:
 
     {{- else }}
 
-    # cartservice以外は共通設定
-    - timeout: {{ $.Values.resilience.defaults.virtualService.timeout }}
+    - timeout: {{ dig "virtualService" "timeout" $.Values.resilience.defaults.virtualService.timeout $svc }}
 
       retries:
-        attempts: {{ $.Values.resilience.defaults.virtualService.retries.attempts }}
-        perTryTimeout: {{ $.Values.resilience.defaults.virtualService.retries.perTryTimeout }}
-        retryOn: {{ $.Values.resilience.defaults.virtualService.retries.retryOn | quote }}
-        retryIgnorePreviousHosts: {{ $.Values.resilience.defaults.virtualService.retries.retryIgnorePreviousHosts }}
-        backoff: {{ $.Values.resilience.defaults.virtualService.retries.backoff }}
+        attempts: {{ dig "virtualService" "retries" "attempts" $.Values.resilience.defaults.virtualService.retries.attempts $svc }}
+        perTryTimeout: {{ dig "virtualService" "retries" "perTryTimeout" $.Values.resilience.defaults.virtualService.retries.perTryTimeout $svc }}
+        retryOn: {{ dig "virtualService" "retries" "retryOn" $.Values.resilience.defaults.virtualService.retries.retryOn $svc | quote }}
+        retryIgnorePreviousHosts: {{ dig "virtualService" "retries" "retryIgnorePreviousHosts" $.Values.resilience.defaults.virtualService.retries.retryIgnorePreviousHosts $svc }}
+        backoff: {{ dig "virtualService" "retries" "backoff" $.Values.resilience.defaults.virtualService.retries.backoff $svc }}
 
       route:
         - destination:
             host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
-
     {{- end }}
 {{- end }}
 {{- end }}
