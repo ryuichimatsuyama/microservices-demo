@@ -71,14 +71,18 @@ spec:
 
     {{- else }}
 
+    {{- $attempts := dig "virtualService" "retries" "attempts" $.Values.resilience.defaults.virtualService.retries.attempts $svc }}
+
     - timeout: {{ dig "virtualService" "timeout" $.Values.resilience.defaults.virtualService.timeout $svc }}
 
+      {{- if gt (int $attempts) 0 }}
       retries:
-        attempts: {{ dig "virtualService" "retries" "attempts" $.Values.resilience.defaults.virtualService.retries.attempts $svc }}
+        attempts: {{ $attempts }}
         perTryTimeout: {{ dig "virtualService" "retries" "perTryTimeout" $.Values.resilience.defaults.virtualService.retries.perTryTimeout $svc }}
         retryOn: {{ dig "virtualService" "retries" "retryOn" $.Values.resilience.defaults.virtualService.retries.retryOn $svc | quote }}
         retryIgnorePreviousHosts: {{ dig "virtualService" "retries" "retryIgnorePreviousHosts" $.Values.resilience.defaults.virtualService.retries.retryIgnorePreviousHosts $svc }}
         backoff: {{ dig "virtualService" "retries" "backoff" $.Values.resilience.defaults.virtualService.retries.backoff $svc }}
+      {{- end }}
 
       route:
         - destination:
