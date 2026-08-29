@@ -312,7 +312,7 @@ resilience:
         splitExternalLocalOriginErrors: true
         consecutiveLocalOriginFailures: 1
         interval: 100ms
-        baseEjectionTime: 60s
+        baseEjectionTime: 180s
         maxEjectionPercent: 50
 
     virtualService:
