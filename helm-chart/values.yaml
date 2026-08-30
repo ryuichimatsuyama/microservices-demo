@@ -82,7 +82,7 @@ checkoutService:
   replicas: 2
   image:
     repository: "checkoutservice"
-    tag: b3631cd8ed50635590d430a06451f75f592610b8
+    tag: 0adfd58438901a91143cace5f86f0acea6517aa0
   create: true
   name: checkoutservice
   resources:
@@ -168,7 +168,7 @@ paymentService:
   replicas: 2
   image:
     repository: "paymentservice"
-    tag: b3631cd8ed50635590d430a06451f75f592610b8
+    tag: 0adfd58438901a91143cace5f86f0acea6517aa0
   create: true
   name: paymentservice
   resources:
