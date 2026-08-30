@@ -45,7 +45,7 @@ class HipsterShopServer {
       `PaymentService#Charge invoked with request ${JSON.stringify(call.request)}`
     );
 
-    const idempotencyKey = call.request.idempotencyKey;
+    const idempotencyKey = call.request.idempotency_Key;
 
     // idempotency key必須
     if (!idempotencyKey) {
