@@ -19,6 +19,7 @@ const protoLoader = require('@grpc/proto-loader');
 const charge = require('./charge');
 
 const logger = require('./logger')
+const processedPayments = new Map();
 
 class HipsterShopServer {
   constructor(protoRoot, port = HipsterShopServer.PORT) {
@@ -40,14 +41,48 @@ class HipsterShopServer {
    */
   static ChargeServiceHandler(call, callback) {
     try {
-      logger.info(`PaymentService#Charge invoked with request ${JSON.stringify(call.request)}`);
-      const response = charge(call.request);
-      callback(null, response);
-    } catch (err) {
-      console.warn(err);
-      callback(err);
+    logger.info(
+      `PaymentService#Charge invoked with request ${JSON.stringify(call.request)}`
+    );
+
+    const idempotencyKey = call.request.idempotencyKey;
+
+    // idempotency key必須
+    if (!idempotencyKey) {
+      const err = new Error('idempotency_key is required');
+      err.code = grpc.status.INVALID_ARGUMENT;
+      throw err;
     }
+
+    // すでに同じ決済を処理済みなら、
+    // charge()を再実行せず前回の結果を返す
+    if (processedPayments.has(idempotencyKey)) {
+      const cachedResponse = processedPayments.get(idempotencyKey);
+
+      logger.info(
+        `Duplicate payment detected. Returning cached response: ${idempotencyKey}`
+      );
+
+      callback(null, cachedResponse);
+      return;
+    }
+
+    // 初回だけ実際の課金処理
+    const response = charge(call.request);
+
+    // 成功結果を保存
+    processedPayments.set(idempotencyKey, response);
+
+    logger.info(
+      `Payment processed and cached: ${idempotencyKey}`
+    );
+
+    callback(null, response);
+  } catch (err) {
+    console.warn(err);
+    callback(err);
   }
+}
 
   static CheckHandler(call, callback) {
     callback(null, { status: 'SERVING' });

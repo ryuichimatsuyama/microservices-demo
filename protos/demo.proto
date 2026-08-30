@@ -188,6 +188,7 @@ message CreditCardInfo {
 message ChargeRequest {
     Money amount = 1;
     CreditCardInfo credit_card = 2;
+    string idempotency_key = 3;
 }
 
 message ChargeResponse {
