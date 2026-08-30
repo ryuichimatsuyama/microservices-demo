@@ -381,7 +381,8 @@ resilience:
     paymentservice:
       enabled: true
       virtualService:
-        timeout: 3s
+        timeout: 2s
         retries:
-          attempts: 0
-
+          attempts: 1
+          perTryTimeout: 500ms
+          retryOn: "connect-failure,refused-stream,unavailable,reset"
