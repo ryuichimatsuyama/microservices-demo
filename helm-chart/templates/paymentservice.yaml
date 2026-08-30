@@ -74,6 +74,8 @@ spec:
         ports:
         - containerPort: 50051
         env:
+        - name: REDIS_ADDR
+          value: "redis://redis-payment:6379"
         - name: PORT
           value: "50051"
         {{- if .Values.opentelemetryCollector.create }}
@@ -186,4 +188,41 @@ spec:
         ports:
         - "50051"
 {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-payment
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-payment
+  template:
+    metadata:
+      labels:
+        app: redis-payment
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.paymentRedis.image.repository }}:{{ .Values.paymentRedis.image.tag }}"
+          ports:
+            - name: redis
+              containerPort: {{ .Values.paymentRedis.port }}
+          resources:
+{{ toYaml .Values.paymentRedis.resources | indent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-payment
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: redis-payment
+  ports:
+    - name: redis
+      port: {{ .Values.paymentRedis.port }}
+      targetPort: redis
 {{- end }}
