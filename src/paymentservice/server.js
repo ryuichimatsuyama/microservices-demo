@@ -21,6 +21,16 @@ const charge = require('./charge');
 const logger = require('./logger')
 const processedPayments = new Map();
 
+const { createClient } = require('redis');
+
+const redisClient = createClient({
+  url: process.env.REDIS_ADDR || 'redis://redis-payment:6379',
+});
+
+redisClient.on('error', (err) => {
+  logger.error(`Redis error: ${err}`);
+});
+
 class HipsterShopServer {
   constructor(protoRoot, port = HipsterShopServer.PORT) {
     this.port = port;
@@ -39,59 +49,65 @@ class HipsterShopServer {
    * @param {*} call  { ChargeRequest }
    * @param {*} callback  fn(err, ChargeResponse)
    */
-  static ChargeServiceHandler(call, callback) {
+  static async ChargeServiceHandler(call, callback) {
     try {
-    logger.info(
-      `PaymentService#Charge invoked with request ${JSON.stringify(call.request)}`
-    );
-
-    const idempotencyKey = call.request.idempotency_key;
-
-    // idempotency key必須
-    if (!idempotencyKey) {
-      const err = new Error('idempotency_key is required');
-      err.code = grpc.status.INVALID_ARGUMENT;
-      throw err;
-    }
-
-    // すでに同じ決済を処理済みなら、
-    // charge()を再実行せず前回の結果を返す
-    if (processedPayments.has(idempotencyKey)) {
-      const cachedResponse = processedPayments.get(idempotencyKey);
-
       logger.info(
-        `Duplicate payment detected. Returning cached response: ${idempotencyKey}`
+        `PaymentService#Charge invoked with request ${JSON.stringify(call.request)}`
       );
 
-      callback(null, cachedResponse);
-      return;
+      const idempotencyKey = call.request.idempotency_key;
+
+      if (!idempotencyKey) {
+        const err = new Error('idempotency_key is required');
+        err.code = grpc.status.INVALID_ARGUMENT;
+        throw err;
+      }
+
+      const redisKey = `payment:idempotency:${idempotencyKey}`;
+
+      // すでに処理済みなら保存済みの結果を返す
+      const cached = await redisClient.get(redisKey);
+
+      if (cached) {
+        logger.info(
+          `Duplicate payment detected in Redis. Returning cached response: ${idempotencyKey}`
+        );
+
+        callback(null, JSON.parse(cached));
+        return;
+      }
+
+      // 初回のみ決済処理
+      const response = charge(call.request);
+
+      await redisClient.set(
+        redisKey,
+        JSON.stringify(response),
+        {
+          EX: 3600,
+        }
+      );
+
+      logger.info(
+        `Payment processed and cached in Redis: ${idempotencyKey}`
+      );
+
+      callback(null, response);
+    } catch (err) {
+      console.warn(err);
+      callback(err);
     }
-
-    // 初回だけ実際の課金処理
-    const response = charge(call.request);
-
-    // 成功結果を保存
-    processedPayments.set(idempotencyKey, response);
-
-    logger.info(
-      `Payment processed and cached: ${idempotencyKey}`
-    );
-
-    callback(null, response);
-  } catch (err) {
-    console.warn(err);
-    callback(err);
   }
-}
 
   static CheckHandler(call, callback) {
     callback(null, { status: 'SERVING' });
   }
 
-
-  listen() {
-    const server = this.server 
-    const port = this.port
+  async listen() {
+    await redisClient.connect();
+    logger.info('Connected to payment Redis');
+    const server = this.server;
+    const port = this.port;
     server.bindAsync(
       `[::]:${port}`,
       grpc.ServerCredentials.createInsecure(),
