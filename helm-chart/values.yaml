@@ -168,7 +168,7 @@ paymentService:
   replicas: 2
   image:
     repository: "paymentservice"
-    tag: ead68434c84414b858198127837512470980a759
+    tag: bdf36beb15bf6e9b03cd0054d148a4ddb44ad625
   create: true
   name: paymentservice
   resources:
