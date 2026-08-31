@@ -314,10 +314,57 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 			idempotencyKey,
 		)
 
-		// ここは次に実装
+		const (
+			maxAttempts  = 50
+			waitInterval = 100 * time.Millisecond
+		)
+
+		for i := 0; i < maxAttempts; i++ {
+			select {
+			case <-ctx.Done():
+				return nil, status.Error(
+					codes.Canceled,
+					"request canceled while waiting for existing order result",
+				)
+			case <-time.After(waitInterval):
+			}
+
+			cached, err := cs.redisClient.Get(ctx, resultKey).Result()
+
+			if err == nil {
+				var response pb.PlaceOrderResponse
+
+				if err := protojson.Unmarshal(
+					[]byte(cached),
+					&response,
+				); err != nil {
+					return nil, status.Errorf(
+						codes.Internal,
+						"failed to decode cached order response: %v",
+						err,
+					)
+				}
+
+				log.Infof(
+					"[PlaceOrder] existing result became available idempotency_key=%q",
+					idempotencyKey,
+				)
+
+				return &response, nil
+			}
+
+			if err != redis.Nil {
+				return nil, status.Errorf(
+					codes.Internal,
+					"failed waiting for existing order result: %v",
+					err,
+				)
+			}
+		}
+
 		return nil, status.Error(
-			codes.Aborted,
-			"order is already being processed",
+			codes.Unavailable,
+			"order is still being processed",
 		)
 	}
 
