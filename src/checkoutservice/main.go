@@ -321,6 +321,31 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 		)
 	}
 
+	releaseScript := redis.NewScript(`
+	if redis.call("GET", KEYS[1]) == ARGV[1] then
+		return redis.call("DEL", KEYS[1])
+	else
+		return 0
+	end
+	`)
+
+	defer func() {
+		_, err := releaseScript.Run(
+			context.Background(),
+			cs.redisClient,
+			[]string{lockKey},
+			lockToken,
+		).Result()
+
+		if err != nil {
+			log.Errorf(
+				"[PlaceOrder] failed to release idempotency lock key=%q: %v",
+				idempotencyKey,
+				err,
+			)
+		}
+	}()
+
 	log.Infof(
 		"[PlaceOrder] idempotency lock acquired idempotency_key=%q",
 		idempotencyKey,
