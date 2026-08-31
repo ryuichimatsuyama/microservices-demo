@@ -82,7 +82,7 @@ checkoutService:
   replicas: 2
   image:
     repository: "checkoutservice"
-    tag: 0adfd58438901a91143cace5f86f0acea6517aa0
+    tag: 82eb592d379c6468952bc71633a9deb6551ecee1
   create: true
   name: checkoutservice
   resources:
@@ -126,7 +126,7 @@ frontend:
     latencyThresholdMs: "500.0"
   image:
     repository: "frontend"
-    tag: bc3a1b44f5d115d3d92cdf6dd5a0e9a365a7ba96
+    tag: 82eb592d379c6468952bc71633a9deb6551ecee1
   create: true
   name: frontend
   externalService: true
