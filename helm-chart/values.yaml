@@ -386,9 +386,11 @@ resilience:
     checkoutservice:
       enabled: true
       virtualService:
-        timeout: 3s
+        timeout: 1s
         retries:
-          attempts: 0
+          attempts: 1
+          perTryTimeout: 200ms
+          retryOn: "connect-failure,refused-stream,unavailable,reset"
 
     paymentservice:
       enabled: true
