@@ -233,6 +233,7 @@ message PlaceOrderRequest {
     Address address = 3;
     string email = 5;
     CreditCardInfo credit_card = 6;
+    string idempotency_key = 7;
 }
 
 message PlaceOrderResponse {
