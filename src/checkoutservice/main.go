@@ -351,6 +351,11 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 		idempotencyKey,
 	)
 
+	log.Infof(
+		"[PlaceOrder] executing order idempotency_key=%q",
+		idempotencyKey,
+	)
+
 	orderID, err := uuid.NewUUID()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate order uuid")
