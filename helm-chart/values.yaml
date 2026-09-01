@@ -82,7 +82,7 @@ checkoutService:
   replicas: 5
   image:
     repository: "checkoutservice"
-    tag: 0c23d62c902488664fcf5fd3b73a932fb0d11496
+    tag: bbe47c53c5ad6e61320d895d5170a19b664bb40d
   create: true
   name: checkoutservice
   resources:
