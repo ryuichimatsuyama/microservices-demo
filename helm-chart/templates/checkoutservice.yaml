@@ -27,8 +27,8 @@ metadata:
   {{- end }}
 ---
 {{- end }}
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: {{ .Values.checkoutService.name }}
   namespace: {{ .Release.Namespace }}
@@ -36,6 +36,22 @@ metadata:
     app: {{ .Values.checkoutService.name }}
 spec:
   replicas: {{ .Values.checkoutService.replicas }}
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause:
+            duration: 2m
+        - analysis:
+            templates:
+              - templateName: checkout-availability
+        - setWeight: 50
+        - pause:
+            duration: 2m
+        - analysis:
+            templates:
+              - templateName: checkout-availability
+        - setWeight: 100
   selector:
     matchLabels:
       app: {{ .Values.checkoutService.name }}

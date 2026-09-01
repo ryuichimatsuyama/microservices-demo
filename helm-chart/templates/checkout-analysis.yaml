@@ -1,0 +1,27 @@
+{{- if .Values.checkoutService.create }}
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: checkout-availability
+  namespace: {{ .Release.Namespace }}
+spec:
+  metrics:
+    - name: checkout-availability
+      interval: 30s
+      count: 3
+      failureLimit: 1
+
+      successCondition: len(result) > 0 && result[0] >= 0.999
+      failureCondition: len(result) > 0 && result[0] < 0.999
+
+      provider:
+        prometheus:
+          address: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+
+          query: |
+            1 -
+            slo:sli_error:ratio_rate5m{
+              sloth_service="checkoutservice",
+              sloth_slo="availability"
+            }
+{{- end }}
