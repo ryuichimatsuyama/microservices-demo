@@ -17,9 +17,9 @@
 # Declare variables to be passed into your templates.
 
 images:
-  repository: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo
+  repository: ghcr.io/ryuichimatsuyama
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "134a1accc02d09b46273be719e2657e9859c9be0"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
@@ -54,7 +54,7 @@ adService:
   image:
     registry: ghcr.io
     repository: ryuichimatsuyama/adservice
-    tag: f5bb442cf4dcfb9d1c7419eb4a28064882f5f24f
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: adservice
   resources:
@@ -65,6 +65,9 @@ adService:
       cpu: 300m
       memory: 300Mi
 cartService:
+  image:
+    repository: "cartservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: cartservice
   resources:
@@ -74,7 +77,12 @@ cartService:
     limits:
       cpu: 300m
       memory: 256Mi
+  replicas: 2
 checkoutService:
+  replicas: 2
+  image:
+    repository: "checkoutservice"
+    tag: bbe47c53c5ad6e61320d895d5170a19b664bb40d
   create: true
   name: checkoutservice
   resources:
@@ -84,7 +92,22 @@ checkoutService:
     limits:
       cpu: 200m
       memory: 128Mi
+checkoutRedis:
+  image:
+    repository: redis
+    tag: "7-alpine"
+  port: 6379
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 currencyService:
+  image:
+    repository: "currencyservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: currencyservice
   resources:
@@ -95,6 +118,9 @@ currencyService:
       cpu: 200m
       memory: 256Mi
 emailService:
+  image:
+    repository: "emailservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: emailservice
   resources:
@@ -105,6 +131,14 @@ emailService:
       cpu: 200m
       memory: 128Mi
 frontend:
+  slo:
+    enabled: true
+    objective: 99.9
+    latencyObjective: 99
+    latencyThresholdMs: "500.0"
+  image:
+    repository: "frontend"
+    tag: 82eb592d379c6468952bc71633a9deb6551ecee1
   create: true
   name: frontend
   externalService: true
@@ -129,6 +163,9 @@ frontend:
       cpu: 200m
       memory: 128Mi
 loadGenerator:
+  image:
+    repository: "loadgenerator"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: loadgenerator
   checkFrontendInitContainer: true
@@ -140,6 +177,10 @@ loadGenerator:
       cpu: 500m
       memory: 512Mi
 paymentService:
+  replicas: 2
+  image:
+    repository: "paymentservice"
+    tag: bdf36beb15bf6e9b03cd0054d148a4ddb44ad625
   create: true
   name: paymentservice
   resources:
@@ -149,7 +190,23 @@ paymentService:
     limits:
       cpu: 200m
       memory: 256Mi
+paymentRedis:
+  image:
+    repository: redis
+    tag: "7-alpine"
+  port: 6379
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 productCatalogService:
+  replicas: 2
+  image:
+    repository: "productcatalogservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: productcatalogservice
   # Specifies an extra latency to any request on productcatalogservice, by default no extra latency.
@@ -162,6 +219,10 @@ productCatalogService:
       cpu: 200m
       memory: 128Mi
 recommendationService:
+  replicas: 2
+  image:
+    repository: "recommendationservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: recommendationservice
   resources:
@@ -172,6 +233,9 @@ recommendationService:
       cpu: 200m
       memory: 450Mi
 shippingService:
+  image:
+    repository: "shippingservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: true
   name: shippingservice
   resources:
@@ -199,5 +263,140 @@ cartDatabase:
 # @TODO: This service is not currently available in Helm.
 # https://github.com/GoogleCloudPlatform/microservices-demo/tree/main/kustomize/components/shopping-assistant
 shoppingAssistantService:
+  image:
+    repository: "shoppingassistantservice"
+    tag: b3631cd8ed50635590d430a06451f75f592610b8
   create: false
   name: shoppingassistantservice
+
+slos:
+  grpcServices:
+    - name: adservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: cartservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: checkoutservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: currencyservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: emailservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: paymentservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: productcatalogservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: recommendationservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+    - name: shippingservice
+      enabled: true
+      availabilityObjective: 99.9
+      latencyObjective: 99
+      latencyThresholdMs: "500.0"
+
+istioRevision: 1-30
+
+resilience:
+  defaults:
+    destinationRule:
+      enabled: true
+      loadBalancer: LEAST_REQUEST
+      outlierDetection:
+        splitExternalLocalOriginErrors: true
+        consecutiveLocalOriginFailures: 1
+        interval: 100ms
+        baseEjectionTime: 180s
+        maxEjectionPercent: 50
+
+    virtualService:
+      enabled: true
+      timeout: 500ms
+      retries:
+        attempts: 2
+        perTryTimeout: 100ms
+        retryOn: "5xx,reset,connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded"
+        retryIgnorePreviousHosts: true
+        backoff: 1ms
+
+  services:
+    cartservice:
+      enabled: true
+      destinationRule:
+        outlierDetection:
+          baseEjectionTime: 180s
+      virtualService:
+        routes:
+          - name: get-cart
+            uri: /hipstershop.CartService/GetCart
+            timeout: 500ms
+            retries:
+              attempts: 2
+              perTryTimeout: 100ms
+              retryOn: "5xx,reset,connect-failure,refused-stream,unavailable,cancelled,deadline-exceeded"
+              retryIgnorePreviousHosts: true
+              backoff: 1ms
+
+          - name: add-item
+            uri: /hipstershop.CartService/AddItem
+            timeout: 500ms
+            retries:
+              attempts: 1
+              perTryTimeout: 200ms
+              retryOn: "connect-failure,refused-stream,unavailable"
+              retryIgnorePreviousHosts: true
+              backoff: 1ms
+
+    productcatalogservice:
+      enabled: true
+
+    recommendationservice:
+      enabled: true
+
+    checkoutservice:
+      enabled: true
+      virtualService:
+        timeout: 1s
+        retries:
+          attempts: 1
+          perTryTimeout: 200ms
+          retryOn: "connect-failure,refused-stream,unavailable,reset"
+
+    paymentservice:
+      enabled: true
+      virtualService:
+        timeout: 1s
+        retries:
+          attempts: 1
+          perTryTimeout: 200ms
+          retryOn: "connect-failure,refused-stream,unavailable,reset"

@@ -188,6 +188,7 @@ message CreditCardInfo {
 message ChargeRequest {
     Money amount = 1;
     CreditCardInfo credit_card = 2;
+    string idempotency_key = 3;
 }
 
 message ChargeResponse {
@@ -232,6 +233,7 @@ message PlaceOrderRequest {
     Address address = 3;
     string email = 5;
     CreditCardInfo credit_card = 6;
+    string idempotency_key = 7;
 }
 
 message PlaceOrderResponse {

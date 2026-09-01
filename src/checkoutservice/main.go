@@ -24,12 +24,14 @@ import (
 	"cloud.google.com/go/profiler"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/genproto"
 	money "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/money"
@@ -83,6 +85,8 @@ type checkoutService struct {
 
 	paymentSvcAddr string
 	paymentSvcConn *grpc.ClientConn
+
+	redisClient *redis.Client
 }
 
 func main() {
@@ -108,6 +112,20 @@ func main() {
 	}
 
 	svc := new(checkoutService)
+	redisAddr := os.Getenv("CHECKOUT_REDIS_ADDR")
+	if redisAddr == "" {
+		log.Fatal("CHECKOUT_REDIS_ADDR is required")
+	}
+
+	svc.redisClient = redis.NewClient(&redis.Options{
+		Addr: redisAddr,
+	})
+
+	if err := svc.redisClient.Ping(ctx).Err(); err != nil {
+		log.Fatalf("failed to connect to checkout redis: %v", err)
+	}
+
+	log.Infof("connected to checkout redis: %s", redisAddr)
 	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
 	mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR")
 	mustMapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR")
@@ -228,7 +246,162 @@ func (cs *checkoutService) Watch(req *healthpb.HealthCheckRequest, ws healthpb.H
 }
 
 func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderRequest) (*pb.PlaceOrderResponse, error) {
-	log.Infof("[PlaceOrder] user_id=%q user_currency=%q", req.UserId, req.UserCurrency)
+	idempotencyKey := req.GetIdempotencyKey()
+
+	log.Infof("[PlaceOrder] user_id=%q user_currency=%q idempotency_key=%q", req.UserId, req.UserCurrency, idempotencyKey)
+
+	// idempotency key は必須
+	if idempotencyKey == "" {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"idempotency_key is required",
+		)
+	}
+
+	resultKey := "checkout:idempotency:" + idempotencyKey
+	lockKey := "checkout:idempotency:lock:" + idempotencyKey
+
+	// ① すでに処理済みなら保存済みresponseを返す
+	cached, err := cs.redisClient.Get(ctx, resultKey).Result()
+	if err == nil {
+		var response pb.PlaceOrderResponse
+
+		if err := protojson.Unmarshal([]byte(cached), &response); err != nil {
+			return nil, status.Errorf(
+				codes.Internal,
+				"failed to decode cached order response: %v",
+				err,
+			)
+		}
+
+		log.Infof(
+			"[PlaceOrder] duplicate request, returning cached response idempotency_key=%q",
+			idempotencyKey,
+		)
+
+		return &response, nil
+	}
+
+	if err != redis.Nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to read idempotency state: %v",
+			err,
+		)
+	}
+
+	// ② このリクエストの処理権をSET NXで取得
+	lockToken := uuid.NewString()
+
+	acquired, err := cs.redisClient.SetNX(
+		ctx,
+		lockKey,
+		lockToken,
+		30*time.Second,
+	).Result()
+
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to acquire idempotency lock: %v",
+			err,
+		)
+	}
+
+	if !acquired {
+		log.Infof(
+			"[PlaceOrder] duplicate request is already processing idempotency_key=%q",
+			idempotencyKey,
+		)
+
+		const (
+			maxAttempts  = 50
+			waitInterval = 100 * time.Millisecond
+		)
+
+		for i := 0; i < maxAttempts; i++ {
+			select {
+			case <-ctx.Done():
+				return nil, status.Error(
+					codes.Canceled,
+					"request canceled while waiting for existing order result",
+				)
+			case <-time.After(waitInterval):
+			}
+
+			cached, err := cs.redisClient.Get(ctx, resultKey).Result()
+
+			if err == nil {
+				var response pb.PlaceOrderResponse
+
+				if err := protojson.Unmarshal(
+					[]byte(cached),
+					&response,
+				); err != nil {
+					return nil, status.Errorf(
+						codes.Internal,
+						"failed to decode cached order response: %v",
+						err,
+					)
+				}
+
+				log.Infof(
+					"[PlaceOrder] existing result became available idempotency_key=%q",
+					idempotencyKey,
+				)
+
+				return &response, nil
+			}
+
+			if err != redis.Nil {
+				return nil, status.Errorf(
+					codes.Internal,
+					"failed waiting for existing order result: %v",
+					err,
+				)
+			}
+		}
+
+		return nil, status.Error(
+			codes.Unavailable,
+			"order is still being processed",
+		)
+	}
+
+	releaseScript := redis.NewScript(`
+	if redis.call("GET", KEYS[1]) == ARGV[1] then
+		return redis.call("DEL", KEYS[1])
+	else
+		return 0
+	end
+	`)
+
+	defer func() {
+		_, err := releaseScript.Run(
+			context.Background(),
+			cs.redisClient,
+			[]string{lockKey},
+			lockToken,
+		).Result()
+
+		if err != nil {
+			log.Errorf(
+				"[PlaceOrder] failed to release idempotency lock key=%q: %v",
+				idempotencyKey,
+				err,
+			)
+		}
+	}()
+
+	log.Infof(
+		"[PlaceOrder] idempotency lock acquired idempotency_key=%q",
+		idempotencyKey,
+	)
+
+	log.Infof(
+		"[PlaceOrder] executing order idempotency_key=%q",
+		idempotencyKey,
+	)
 
 	orderID, err := uuid.NewUUID()
 	if err != nil {
@@ -249,7 +422,7 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 		total = money.Must(money.Sum(total, multPrice))
 	}
 
-	txID, err := cs.chargeCard(ctx, &total, req.CreditCard)
+	txID, err := cs.chargeCard(ctx, &total, req.CreditCard, orderID.String())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to charge card: %+v", err)
 	}
@@ -275,8 +448,39 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 	} else {
 		log.Infof("order confirmation email sent to %q", req.Email)
 	}
-	resp := &pb.PlaceOrderResponse{Order: orderResult}
-	return resp, nil
+	response := &pb.PlaceOrderResponse{
+		Order: orderResult,
+	}
+
+	// PlaceOrder成功結果をRedisへ保存
+	encoded, err := protojson.Marshal(response)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to encode PlaceOrder response: %v",
+			err,
+		)
+	}
+
+	if err := cs.redisClient.Set(
+		ctx,
+		resultKey,
+		encoded,
+		time.Hour,
+	).Err(); err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to save PlaceOrder response to Redis: %v",
+			err,
+		)
+	}
+
+	log.Infof(
+		"[PlaceOrder] result cached idempotency_key=%q",
+		idempotencyKey,
+	)
+
+	return response, nil
 }
 
 type orderPrep struct {
@@ -366,10 +570,11 @@ func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, 
 	return result, err
 }
 
-func (cs *checkoutService) chargeCard(ctx context.Context, amount *pb.Money, paymentInfo *pb.CreditCardInfo) (string, error) {
+func (cs *checkoutService) chargeCard(ctx context.Context, amount *pb.Money, paymentInfo *pb.CreditCardInfo, orderID string) (string, error) {
 	paymentResp, err := pb.NewPaymentServiceClient(cs.paymentSvcConn).Charge(ctx, &pb.ChargeRequest{
-		Amount:     amount,
-		CreditCard: paymentInfo})
+		Amount:         amount,
+		CreditCard:     paymentInfo,
+		IdempotencyKey: orderID})
 	if err != nil {
 		return "", fmt.Errorf("could not charge the card: %+v", err)
 	}

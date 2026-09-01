@@ -33,6 +33,7 @@ metadata:
   labels:
     app: {{ .Values.cartService.name }}
 spec:
+  replicas: {{ .Values.cartService.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.cartService.name }}
@@ -73,7 +74,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: {{ .Values.images.repository }}/{{ .Values.cartService.name }}:{{ .Values.images.tag | default .Chart.AppVersion }}
+        image: {{ .Values.images.repository }}/{{ .Values.cartService.name }}:{{ .Values.cartService.image.tag | default .Chart.AppVersion }}
         ports:
         - containerPort: 7070
         env:

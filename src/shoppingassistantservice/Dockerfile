@@ -15,7 +15,7 @@
 # Define a default value so it's not empty if the builder fails to provide it
 ARG BUILDPLATFORM=linux/amd64
 
-FROM --platform=$BUILDPLATFORM python:3.14.6-slim@sha256:b877e50bd90de10af8d82c57a022fc2e0dc731c5320d762a27986facfc3355c1 AS base
+FROM --platform=$BUILDPLATFORM python:3.14.7-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4 AS base
 
 FROM base AS builder
 
@@ -31,11 +31,24 @@ FROM base
 # Enable unbuffered logging
 ENV PYTHONUNBUFFERED=1
 
+# ★ final image のOSパッケージも更新
+RUN apt-get -qq update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # get packages
 WORKDIR /shoppingassistantservice
 
 # Grab packages from builder
 COPY --from=builder /usr/local/lib/python3.14/ /usr/local/lib/python3.14/
+
+# Remove pip from production image
+RUN rm -rf \
+    /usr/local/lib/python3.14/site-packages/pip \
+    /usr/local/lib/python3.14/site-packages/pip-*.dist-info \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.14
 
 # Add the application
 COPY . .
