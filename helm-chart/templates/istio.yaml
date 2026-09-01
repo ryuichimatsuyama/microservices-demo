@@ -1,0 +1,92 @@
+{{- range $name, $svc := .Values.resilience.services }}
+{{- if and $svc.enabled $.Values.resilience.defaults.destinationRule.enabled }}
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+  trafficPolicy:
+    loadBalancer:
+      simple: {{ $.Values.resilience.defaults.destinationRule.loadBalancer }}
+
+    outlierDetection:
+      splitExternalLocalOriginErrors: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.splitExternalLocalOriginErrors }}
+      consecutiveLocalOriginFailures: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.consecutiveLocalOriginFailures }}
+      interval: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.interval }}
+
+      {{- if and $svc.destinationRule $svc.destinationRule.outlierDetection $svc.destinationRule.outlierDetection.baseEjectionTime }}
+      baseEjectionTime: {{ $svc.destinationRule.outlierDetection.baseEjectionTime }}
+      {{- else }}
+      baseEjectionTime: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.baseEjectionTime }}
+      {{- end }}
+
+      maxEjectionPercent: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.maxEjectionPercent }}
+{{- end }}
+{{- if and $svc.enabled $.Values.resilience.defaults.virtualService.enabled }}
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  exportTo:
+    - "."
+  hosts:
+    - {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+  http:
+    {{- if and $svc.virtualService $svc.virtualService.routes }}
+
+    {{- range $route := $svc.virtualService.routes }}
+    - name: {{ $route.name }}
+
+      match:
+        - uri:
+            exact: {{ $route.uri | quote }}
+
+      timeout: {{ $route.timeout }}
+
+      retries:
+        attempts: {{ $route.retries.attempts }}
+        perTryTimeout: {{ $route.retries.perTryTimeout }}
+        retryOn: {{ $route.retries.retryOn | quote }}
+        retryIgnorePreviousHosts: {{ $route.retries.retryIgnorePreviousHosts }}
+        backoff: {{ $route.retries.backoff }}
+
+      route:
+        - destination:
+            host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+    {{- end }}
+
+    # 上記methodにマッチしないCartService RPC用
+    - name: default
+      route:
+        - destination:
+            host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+
+    {{- else }}
+
+    {{- $attempts := dig "virtualService" "retries" "attempts" $.Values.resilience.defaults.virtualService.retries.attempts $svc }}
+
+    - timeout: {{ dig "virtualService" "timeout" $.Values.resilience.defaults.virtualService.timeout $svc }}
+
+      {{- if gt (int $attempts) 0 }}
+      retries:
+        attempts: {{ $attempts }}
+        perTryTimeout: {{ dig "virtualService" "retries" "perTryTimeout" $.Values.resilience.defaults.virtualService.retries.perTryTimeout $svc }}
+        retryOn: {{ dig "virtualService" "retries" "retryOn" $.Values.resilience.defaults.virtualService.retries.retryOn $svc | quote }}
+        retryIgnorePreviousHosts: {{ dig "virtualService" "retries" "retryIgnorePreviousHosts" $.Values.resilience.defaults.virtualService.retries.retryIgnorePreviousHosts $svc }}
+        backoff: {{ dig "virtualService" "retries" "backoff" $.Values.resilience.defaults.virtualService.retries.backoff $svc }}
+      {{- end }}
+
+      route:
+        - destination:
+            host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+    {{- end }}
+{{- end }}
+{{- end }}

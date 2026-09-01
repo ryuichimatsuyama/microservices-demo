@@ -35,6 +35,7 @@ metadata:
   labels:
     app: {{ .Values.checkoutService.name }}
 spec:
+  replicas: {{ .Values.checkoutService.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.checkoutService.name }}
@@ -78,6 +79,8 @@ spec:
           grpc:
             port: 5050
         env:
+        - name: CHECKOUT_REDIS_ADDR
+          value: "redis-checkout:6379"
         - name: PORT
           value: "5050"
         - name: PRODUCT_CATALOG_SERVICE_ADDR
@@ -202,4 +205,41 @@ spec:
         ports:
         - "5050"
 {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-checkout
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-checkout
+  template:
+    metadata:
+      labels:
+        app: redis-checkout
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.checkoutRedis.image.repository }}:{{ .Values.checkoutRedis.image.tag }}"
+          ports:
+            - name: redis
+              containerPort: {{ .Values.checkoutRedis.port }}
+          resources:
+{{ toYaml .Values.checkoutRedis.resources | indent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-checkout
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: redis-checkout
+  ports:
+    - name: redis
+      port: {{ .Values.checkoutRedis.port }}
+      targetPort: redis
 {{- end }}

@@ -33,6 +33,7 @@ metadata:
   labels:
     app: {{ .Values.cartService.name }}
 spec:
+  replicas: {{ .Values.cartService.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.cartService.name }}
