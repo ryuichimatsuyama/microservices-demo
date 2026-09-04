@@ -1,4 +1,6 @@
 {{- range $name, $svc := .Values.resilience.services }}
+{{- $isCheckout := eq $name $.Values.checkoutService.name }}
+
 {{- if and $svc.enabled $.Values.resilience.defaults.destinationRule.enabled }}
 ---
 apiVersion: networking.istio.io/v1
@@ -8,7 +10,6 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 spec:
   host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
-
   trafficPolicy:
     loadBalancer:
       simple: {{ $.Values.resilience.defaults.destinationRule.loadBalancer }}
@@ -26,6 +27,7 @@ spec:
 
       maxEjectionPercent: {{ $.Values.resilience.defaults.destinationRule.outlierDetection.maxEjectionPercent }}
 {{- end }}
+
 {{- if and $svc.enabled $.Values.resilience.defaults.virtualService.enabled }}
 ---
 apiVersion: networking.istio.io/v1
@@ -36,6 +38,7 @@ metadata:
 spec:
   exportTo:
     - "."
+
   hosts:
     - {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
 
@@ -59,21 +62,45 @@ spec:
         backoff: {{ $route.retries.backoff }}
 
       route:
+        {{- if $isCheckout }}
+        - destination:
+            host: {{ $name }}-stable.{{ $.Release.Namespace }}.svc.cluster.local
+          weight: 100
+
+        - destination:
+            host: {{ $name }}-canary.{{ $.Release.Namespace }}.svc.cluster.local
+          weight: 0
+        {{- else }}
         - destination:
             host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+        {{- end }}
+
     {{- end }}
 
-    # 上記methodにマッチしないCartService RPC用
-    - name: default
+    # 上記methodにマッチしないRPC用
+    - name: {{ if $isCheckout }}primary{{ else }}default{{ end }}
+
       route:
+        {{- if $isCheckout }}
+        - destination:
+            host: {{ $name }}-stable.{{ $.Release.Namespace }}.svc.cluster.local
+          weight: 100
+
+        - destination:
+            host: {{ $name }}-canary.{{ $.Release.Namespace }}.svc.cluster.local
+          weight: 0
+        {{- else }}
         - destination:
             host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+        {{- end }}
 
     {{- else }}
 
     {{- $attempts := dig "virtualService" "retries" "attempts" $.Values.resilience.defaults.virtualService.retries.attempts $svc }}
 
-    - timeout: {{ dig "virtualService" "timeout" $.Values.resilience.defaults.virtualService.timeout $svc }}
+    - name: {{ if $isCheckout }}primary{{ else }}default{{ end }}
+
+      timeout: {{ dig "virtualService" "timeout" $.Values.resilience.defaults.virtualService.timeout $svc }}
 
       {{- if gt (int $attempts) 0 }}
       retries:
@@ -85,8 +112,20 @@ spec:
       {{- end }}
 
       route:
+        {{- if $isCheckout }}
+        - destination:
+            host: {{ $name }}-stable.{{ $.Release.Namespace }}.svc.cluster.local
+          weight: 100
+
+        - destination:
+            host: {{ $name }}-canary.{{ $.Release.Namespace }}.svc.cluster.local
+          weight: 0
+        {{- else }}
         - destination:
             host: {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+        {{- end }}
+
     {{- end }}
 {{- end }}
+
 {{- end }}

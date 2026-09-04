@@ -47,6 +47,7 @@ spec:
             name: {{ .Values.checkoutService.name }}
             routes:
               - primary
+
       steps:
         - setWeight: 20
         - pause:
@@ -184,26 +185,6 @@ spec:
     - name: grpc
       port: 5050
       targetPort: 5050
----
-apiVersion: networking.istio.io/v1
-kind: VirtualService
-metadata:
-  name: {{ .Values.checkoutService.name }}
-  namespace: {{ .Release.Namespace }}
-spec:
-  hosts:
-    - {{ .Values.checkoutService.name }}
-
-  http:
-    - name: primary
-      route:
-        - destination:
-            host: {{ .Values.checkoutService.name }}-stable
-          weight: 100
-
-        - destination:
-            host: {{ .Values.checkoutService.name }}-canary
-          weight: 0
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
