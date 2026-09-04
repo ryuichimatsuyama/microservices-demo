@@ -79,7 +79,7 @@ cartService:
       memory: 256Mi
   replicas: 2
 checkoutService:
-  replicas: 5
+  replicas: 2
   image:
     repository: "checkoutservice"
     tag: bbe47c53c5ad6e61320d895d5170a19b664bb40d

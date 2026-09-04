@@ -38,6 +38,15 @@ spec:
   replicas: {{ .Values.checkoutService.replicas }}
   strategy:
     canary:
+      stableService: {{ .Values.checkoutService.name }}-stable
+      canaryService: {{ .Values.checkoutService.name }}-canary
+
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.checkoutService.name }}
+            routes:
+              - primary
       steps:
         - setWeight: 20
         - pause:
@@ -126,7 +135,7 @@ spec:
           value: "1"
         {{- end }}
         resources:
-          {{- toYaml .Values.checkoutService.resources | nindent 10 }}
+          {{- toYaml .Values.checkoutService.resources | nindent 12 }}
 ---
 apiVersion: v1
 kind: Service
@@ -143,6 +152,58 @@ spec:
   - name: grpc
     port: 5050
     targetPort: 5050
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.checkoutService.name }}-stable
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.checkoutService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.checkoutService.name }}
+  ports:
+    - name: grpc
+      port: 5050
+      targetPort: 5050
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.checkoutService.name }}-canary
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.checkoutService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.checkoutService.name }}
+  ports:
+    - name: grpc
+      port: 5050
+      targetPort: 5050
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.checkoutService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ .Values.checkoutService.name }}
+
+  http:
+    - name: primary
+      route:
+        - destination:
+            host: {{ .Values.checkoutService.name }}-stable
+          weight: 100
+
+        - destination:
+            host: {{ .Values.checkoutService.name }}-canary
+          weight: 0
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
