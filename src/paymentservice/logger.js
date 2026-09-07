@@ -15,8 +15,9 @@
  */
 
 const pino = require('pino');
+const { trace } = require('@opentelemetry/api');
 
-module.exports = pino({
+const baseLogger = pino({
   name: 'paymentservice-server',
   messageKey: 'message',
   formatters: {
@@ -25,3 +26,29 @@ module.exports = pino({
     }
   }
 });
+
+function withTraceContext() {
+  const span = trace.getActiveSpan();
+
+  if (!span) {
+    return baseLogger;
+  }
+
+  const spanContext = span.spanContext();
+
+  if (!spanContext || !spanContext.traceId) {
+    return baseLogger;
+  }
+
+  return baseLogger.child({
+    trace_id: spanContext.traceId,
+    span_id: spanContext.spanId
+  });
+}
+
+module.exports = {
+  info: (...args) => withTraceContext().info(...args),
+  warn: (...args) => withTraceContext().warn(...args),
+  error: (...args) => withTraceContext().error(...args),
+  debug: (...args) => withTraceContext().debug(...args)
+};
