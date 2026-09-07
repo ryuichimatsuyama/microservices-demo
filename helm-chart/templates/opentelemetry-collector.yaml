@@ -152,6 +152,16 @@ data:
         operators:
           - type: json_parser
     processors:
+      k8sattributes:
+        auth_type: serviceAccount
+        passthrough: false
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.container.name
+            - k8s.node.name
+            - k8s.deployment.name
       batch:
     exporters:
       otlphttp:
@@ -178,7 +188,7 @@ data:
           exporters: [prometheus] # Export metrics to Prometheus
         traces:
           receivers: [otlp]
-          processors: [batch]
+          processors: [k8sattributes, batch]
           exporters: [otlp, debug]
 {{- if .Values.networkPolicies.create }}
 ---
@@ -307,4 +317,41 @@ spec:
       path: /metrics
       interval: 30s
       scrapeTimeout: 10s
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: opentelemetrycollector-k8sattributes
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - namespaces
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: opentelemetrycollector-k8sattributes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: opentelemetrycollector-k8sattributes
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.opentelemetryCollector.name }}
+    namespace: {{ .Release.Namespace }}
 {{- end }}
