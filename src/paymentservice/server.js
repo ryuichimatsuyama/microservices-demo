@@ -178,7 +178,11 @@ class HipsterShopServer {
       const durationSeconds =
         Number(process.hrtime.bigint() - startTime) / 1e9;
 
-      chargeDuration.record(durationSeconds);
+      chargeDuration.record(
+        durationSeconds,
+        {},
+        requestContext
+      );
 
       try {
         await redisClient.eval(releaseLockScript, {
