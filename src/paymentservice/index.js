@@ -48,7 +48,7 @@ if (process.env.ENABLE_TRACING == "1") {
   const { PeriodicExportingMetricReader } =
     require('@opentelemetry/sdk-metrics');
 
-  const collectorUrl = process.env.COLLECTOR_SERVICE_ADDR;
+  const collectorUrl = `http://${process.env.COLLECTOR_SERVICE_ADDR}`;
 
   const traceExporter = new OTLPTraceExporter({
     url: collectorUrl,
