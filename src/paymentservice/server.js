@@ -34,7 +34,7 @@ redisClient.on('error', (err) => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const { metrics } = require('@opentelemetry/api');
+const { metrics, context } = require('@opentelemetry/api');
 
 const meter = metrics.getMeter('paymentservice');
 
@@ -66,6 +66,7 @@ class HipsterShopServer {
    */
   static async ChargeServiceHandler(call, callback) {
     const startTime = process.hrtime.bigint();
+    const requestContext = context.active();
 
     const idempotencyKey = call.request.idempotency_key;
 
