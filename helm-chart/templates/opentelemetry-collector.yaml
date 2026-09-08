@@ -186,7 +186,7 @@ data:
         metrics:
           receivers: [otlp]
           processors: [batch]
-          exporters: [prometheus] # Export metrics to Prometheus
+          exporters: [prometheus, debug] # Export metrics to Prometheus
         traces:
           receivers: [otlp]
           processors: [k8sattributes, batch]
