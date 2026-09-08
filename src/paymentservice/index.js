@@ -69,7 +69,7 @@ if (process.env.ENABLE_TRACING == "1") {
         process.env.OTEL_SERVICE_NAME || 'paymentservice',
     }),
     traceExporter,
-    metricReader,
+    metricReaders: [metricReader],
     instrumentations: [
       new GrpcInstrumentation(),
     ],

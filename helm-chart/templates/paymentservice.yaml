@@ -74,6 +74,8 @@ spec:
         ports:
         - containerPort: 50051
         env:
+        - name: OTEL_NODE_EXPERIMENTAL_SDK_METRICS
+          value: "true"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
