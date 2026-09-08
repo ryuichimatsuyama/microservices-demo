@@ -180,7 +180,7 @@ paymentService:
   replicas: 2
   image:
     repository: "paymentservice"
-    tag: 2c8eb941406043c98c11ca19f95479f229469fb6
+    tag: 29a83010004aa3b06cefcdc1505dfdf2b2e84076
   create: true
   name: paymentservice
   resources:
