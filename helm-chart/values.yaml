@@ -306,6 +306,7 @@ slos:
       availabilityObjective: 99.9
       latencyObjective: 99
       latencyThresholdMs: "500.0"
+      availabilityRunbookUrl: "https://github.com/ryuichimatsuyama/istio/blob/master/runbooks/paymentservice-availability.md"
 
     - name: productcatalogservice
       enabled: true

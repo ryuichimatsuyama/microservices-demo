@@ -47,6 +47,10 @@ spec:
         name: {{ .name | title | replace "-" "" }}Availability
         labels:
           category: availability
+        {{- with .availabilityRunbookUrl }}
+        annotations:
+          runbook_url: {{ . | quote }}
+        {{- end }}
 
     - name: latency
       objective: {{ .latencyObjective }}
