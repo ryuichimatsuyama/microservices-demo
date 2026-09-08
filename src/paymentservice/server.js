@@ -34,6 +34,18 @@ redisClient.on('error', (err) => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const { metrics } = require('@opentelemetry/api');
+
+const meter = metrics.getMeter('paymentservice');
+
+const chargeDuration = meter.createHistogram(
+  'paymentservice.charge.duration',
+  {
+    description: 'Duration of PaymentService Charge requests',
+    unit: 's',
+  }
+);
+
 class HipsterShopServer {
   constructor(protoRoot, port = HipsterShopServer.PORT) {
     this.port = port;
@@ -53,6 +65,8 @@ class HipsterShopServer {
    * @param {*} callback  fn(err, ChargeResponse)
    */
   static async ChargeServiceHandler(call, callback) {
+    const startTime = process.hrtime.bigint();
+
     const idempotencyKey = call.request.idempotency_key;
 
     if (!idempotencyKey) {
@@ -160,6 +174,11 @@ class HipsterShopServer {
           return 0
         end
       `;
+
+      const durationSeconds =
+        Number(process.hrtime.bigint() - startTime) / 1e9;
+
+      chargeDuration.record(durationSeconds);
 
       try {
         await redisClient.eval(releaseLockScript, {

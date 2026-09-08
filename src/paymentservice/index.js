@@ -32,37 +32,53 @@ if (process.env.DISABLE_PROFILER) {
 
 
 if (process.env.ENABLE_TRACING == "1") {
-  logger.info("Tracing enabled.")
+  logger.info("OpenTelemetry enabled.");
 
   const { resourceFromAttributes } = require('@opentelemetry/resources');
-
-  const { ATTR_SERVICE_NAME }= require('@opentelemetry/semantic-conventions');
-
+  const { ATTR_SERVICE_NAME } = require('@opentelemetry/semantic-conventions');
   const { GrpcInstrumentation } = require('@opentelemetry/instrumentation-grpc');
-  const { registerInstrumentations } = require('@opentelemetry/instrumentation');
   const opentelemetry = require('@opentelemetry/sdk-node');
 
-  const { OTLPTraceExporter } = require('@opentelemetry/exporter-otlp-grpc');
+  const { OTLPTraceExporter } =
+    require('@opentelemetry/exporter-trace-otlp-grpc');
+
+  const { OTLPMetricExporter } =
+    require('@opentelemetry/exporter-metrics-otlp-grpc');
+
+  const { PeriodicExportingMetricReader } =
+    require('@opentelemetry/sdk-metrics');
 
   const collectorUrl = process.env.COLLECTOR_SERVICE_ADDR;
-  const traceExporter = new OTLPTraceExporter({url: collectorUrl});
+
+  const traceExporter = new OTLPTraceExporter({
+    url: collectorUrl,
+  });
+
+  const metricExporter = new OTLPMetricExporter({
+    url: collectorUrl,
+  });
+
+  const metricReader = new PeriodicExportingMetricReader({
+    exporter: metricExporter,
+    exportIntervalMillis: 10000,
+  });
 
   const sdk = new opentelemetry.NodeSDK({
     resource: resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || 'paymentservice',
+      [ATTR_SERVICE_NAME]:
+        process.env.OTEL_SERVICE_NAME || 'paymentservice',
     }),
-    traceExporter: traceExporter,
+    traceExporter,
+    metricReader,
+    instrumentations: [
+      new GrpcInstrumentation(),
+    ],
   });
 
-  registerInstrumentations({
-    instrumentations: [new GrpcInstrumentation()]
-  });
-
-  sdk.start()
+  sdk.start();
 } else {
-  logger.info("Tracing disabled.")
+  logger.info("OpenTelemetry disabled.");
 }
-
 
 const path = require('path');
 const HipsterShopServer = require('./server');
