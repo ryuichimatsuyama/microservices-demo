@@ -1,0 +1,67 @@
+{{- range .Values.slos.externalServices }}
+{{- if .enabled }}
+
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: {{ .name }}-slo
+  namespace: monitoring
+  labels:
+    release: monitoring
+
+spec:
+  service: {{ .name }}
+
+  labels:
+    team: platform
+    type: external
+
+  slos:
+    - name: availability
+      objective: {{ .availabilityObjective }}
+      description: "{{ .name }} external availability"
+
+      sli:
+        events:
+          errorQuery: |
+            (
+              sum(
+                count_over_time(
+                  probe_success{
+                    job="{{ .probeJob }}"
+                  }[{{ "{{.window}}" }}]
+                )
+              )
+              -
+              sum(
+                sum_over_time(
+                  probe_success{
+                    job="{{ .probeJob }}"
+                  }[{{ "{{.window}}" }}]
+                )
+              )
+            ) or vector(0)
+
+          totalQuery: |
+            sum(
+              count_over_time(
+                probe_success{
+                  job="{{ .probeJob }}"
+                }[{{ "{{.window}}" }}]
+              )
+            )
+
+      alerting:
+        name: {{ .name | title | replace "-" "" }}Availability
+        labels:
+          category: availability
+          layer: external
+
+        {{- with .availabilityRunbookUrl }}
+        annotations:
+          runbook_url: {{ . | quote }}
+        {{- end }}
+
+---
+{{- end }}
+{{- end }}

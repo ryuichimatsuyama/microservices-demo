@@ -270,6 +270,15 @@ shoppingAssistantService:
   name: shoppingassistantservice
 
 slos:
+  externalServices:
+    - name: online-boutique-external
+      enabled: true
+
+      probeJob: online-boutique-external
+
+      availabilityObjective: 99.9
+
+      availabilityRunbookUrl: "https://github.com/ryuichimatsuyama/istio"
   grpcServices:
     - name: adservice
       enabled: true
