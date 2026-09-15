@@ -39,7 +39,7 @@ env:
   IMAGE_PREFIX: ghcr.io/ryuichimatsuyama
 
 jobs:
-  build-and-push::
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
