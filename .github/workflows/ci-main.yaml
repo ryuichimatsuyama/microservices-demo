@@ -58,11 +58,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set version
+      - name: Generate release version
         id: version
+        shell: bash
         run: |
-          VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          VERSION="v$(TZ=Asia/Tokyo date +'%Y.%m.%d-%H%M%S')-${GITHUB_SHA::7}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Release version: ${VERSION}"
 
       # ■ buildx bake + push
       - name: Build and push images
