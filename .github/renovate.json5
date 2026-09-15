@@ -52,11 +52,13 @@
       ],
 
       matchPackageNames: [
-        'ghcr.io/ryuichimatsuyama/microservices-demo/release',
+        'ghcr.io/ryuichimatsuyama/release',
       ],
 
       versioning:
         'regex:^v(?<major>\\d{4})\\.(?<minor>\\d{2})\\.(?<patch>\\d{2})-(?<build>\\d{6})-[a-f0-9]{7}$',
+
+      schedule: ['at any time'],
 
       labels: [
         'renovate',
