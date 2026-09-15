@@ -29,13 +29,18 @@ on:
       - '.github/workflows/terraform-validate-ci.yaml'
       - 'helm-chart/**'
       - '.github/workflows/helm-chart-ci.yaml'
-jobs:
-  build:
-    runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      packages: write
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/ryuichimatsuyama
+
+jobs:
+  build-and-push::
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -53,6 +58,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set version
+        id: version
+        run: |
+          VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       # ■ buildx bake + push
       - name: Build and push images
         uses: docker/bake-action@v7
@@ -60,4 +71,33 @@ jobs:
           files: docker-bake.hcl
           push: true
         env:
-          TAG: ${{ github.sha }}
+          TAG: ${{ steps.version.outputs.version }}
+
+      - name: Save version
+        run: |
+          echo "${{ steps.version.outputs.version }}" > /tmp/release-version
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+  release-marker:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push release marker
+        run: |
+          docker pull alpine:3.22
+
+          docker tag alpine:3.22 \
+            ${{ env.IMAGE_PREFIX }}/release:${{ needs.build-and-push.outputs.version }}
+
+          docker push \
+            ${{ env.IMAGE_PREFIX }}/release:${{ needs.build-and-push.outputs.version }} 
