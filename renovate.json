@@ -1,3 +1,40 @@
 {
-  "extends": ["config:best-practices"]
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "extends": [
+    "config:recommended"
+  ],
+
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^helm-chart\\/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+tag:\\s*[\"']?(?<currentValue>v\\d{4}\\.\\d{2}\\.\\d{2}-\\d{6}-[a-f0-9]{7})[\"']?"
+      ]
+    }
+  ],
+
+  "packageRules": [
+    {
+      "description": "Online Boutique release marker",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "ghcr.io/ryuichimatsuyama/release"
+      ],
+
+      "versioning": "regex:^v(?<major>\\d{4})\\.(?<minor>\\d{2})\\.(?<patch>\\d{2})-(?<build>\\d{6})-[a-f0-9]{7}$",
+
+      "labels": [
+        "renovate",
+        "release"
+      ],
+
+      "commitMessageTopic": "Online Boutique release"
+    }
+  ]
 }

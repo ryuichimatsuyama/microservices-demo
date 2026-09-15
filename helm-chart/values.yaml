@@ -18,8 +18,8 @@
 
 images:
   repository: ghcr.io/ryuichimatsuyama
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "134a1accc02d09b46273be719e2657e9859c9be0"
+  # renovate: datasource=docker depName=ghcr.io/ryuichimatsuyama/release
+  tag: "v2026.09.15-100521-591b12d"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
