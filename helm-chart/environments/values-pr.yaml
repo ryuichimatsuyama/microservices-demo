@@ -30,3 +30,6 @@ slos:
 opentelemetryCollector:
   clusterRbac:
     create: false
+
+prEnvironment:
+  enabled: true

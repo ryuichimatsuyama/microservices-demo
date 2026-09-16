@@ -412,3 +412,8 @@ resilience:
           attempts: 1
           perTryTimeout: 200ms
           retryOn: "connect-failure,refused-stream,unavailable,reset"
+
+prEnvironment:
+  enabled: false
+  githubActionsGroup: github-actions-pr-validation
+
