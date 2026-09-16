@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # ------------------------------------------------------------
+      # AWS authentication
+      # ------------------------------------------------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -27,20 +30,62 @@ jobs:
             --region "${{ vars.AWS_REGION }}" \
             --name "${{ vars.EKS_CLUSTER_NAME }}"
 
-      - name: Check identity
+      # ------------------------------------------------------------
+      # Wait until ApplicationSet creates the PR Application
+      # ------------------------------------------------------------
+      - name: Wait for PR Application
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          aws sts get-caller-identity
+          APP="pr-${PR_NUMBER}"
 
-      - name: Check Kubernetes RBAC
+          echo "Waiting for Argo CD Application: ${APP}"
+
+          for i in {1..60}; do
+            if kubectl get application "$APP" -n argocd >/dev/null 2>&1; then
+              echo "Application ${APP} found."
+              kubectl get application "$APP" \
+                -n argocd \
+                -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
+              exit 0
+            fi
+
+            echo "Application ${APP} not found yet. Retrying..."
+            sleep 10
+          done
+
+          echo "ERROR: Application ${APP} was not created within 10 minutes."
+          exit 1
+
+      # ------------------------------------------------------------
+      # Argo CD CLI
+      # ------------------------------------------------------------
+      - name: Install Argo CD CLI
+        env:
+          ARGOCD_VERSION: v3.1.7
         run: |
-          kubectl auth can-i get applications.argoproj.io -n argocd
-          kubectl auth can-i get appprojects.argoproj.io -n argocd
-          kubectl auth can-i delete applications.argoproj.io -n argocd
+          curl -sSL -o /tmp/argocd \
+            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
 
-      - name: Find PR Application
+          sudo install -m 555 /tmp/argocd /usr/local/bin/argocd
+
+          argocd version --client
+
+      # ------------------------------------------------------------
+      # Verify PR environment
+      # ------------------------------------------------------------
+      - name: Verify PR Application is Synced and Healthy
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          APP="pr-${{ github.event.pull_request.number }}"
+          APP="pr-${PR_NUMBER}"
 
-          kubectl get application "$APP" \
-            -n argocd \
-            -o wide
+          echo "Waiting for ${APP} to become Synced and Healthy..."
+
+          argocd app wait "$APP" \
+            --core \
+            --app-namespace argocd \
+            --sync \
+            --health \
+            --timeout 600
+
