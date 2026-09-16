@@ -39,53 +39,34 @@ jobs:
         run: |
           APP="pr-${PR_NUMBER}"
 
-          echo "Waiting for Argo CD Application: ${APP}"
+          echo "Waiting for ${APP} to become Synced and Healthy..."
 
           for i in {1..60}; do
-            if kubectl get application "$APP" -n argocd >/dev/null 2>&1; then
-              echo "Application ${APP} found."
-              kubectl get application "$APP" \
-                -n argocd \
-                -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
+            if ! kubectl get application "$APP" -n argocd >/dev/null 2>&1; then
+              echo "Attempt ${i}/60: Application not found yet."
+              sleep 10
+              continue
+            fi
+
+            SYNC=$(kubectl get application "$APP" -n argocd \
+              -o jsonpath='{.status.sync.status}')
+
+            HEALTH=$(kubectl get application "$APP" -n argocd \
+              -o jsonpath='{.status.health.status}')
+
+            echo "Attempt ${i}/60: sync=${SYNC}, health=${HEALTH}"
+
+            if [[ "$SYNC" == "Synced" && "$HEALTH" == "Healthy" ]]; then
+              echo "SUCCESS: ${APP} is Synced and Healthy."
               exit 0
             fi
 
-            echo "Application ${APP} not found yet. Retrying..."
             sleep 10
           done
 
-          echo "ERROR: Application ${APP} was not created within 10 minutes."
+          echo "ERROR: ${APP} did not become Synced and Healthy within 10 minutes."
+
+          kubectl get application "$APP" -n argocd \
+            -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
+
           exit 1
-
-      # ------------------------------------------------------------
-      # Argo CD CLI
-      # ------------------------------------------------------------
-      - name: Install Argo CD CLI
-        env:
-          ARGOCD_VERSION: v3.1.7
-        run: |
-          curl -sSL -o /tmp/argocd \
-            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
-
-          sudo install -m 555 /tmp/argocd /usr/local/bin/argocd
-
-          argocd version --client
-
-      # ------------------------------------------------------------
-      # Verify PR environment
-      # ------------------------------------------------------------
-      - name: Verify PR Application is Synced and Healthy
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          APP="pr-${PR_NUMBER}"
-
-          echo "Waiting for ${APP} to become Synced and Healthy..."
-
-          argocd app wait "$APP" \
-            --core \
-            --app-namespace argocd \
-            --sync \
-            --health \
-            --timeout 600
-
