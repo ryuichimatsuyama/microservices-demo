@@ -98,12 +98,15 @@ spec:
         image: {{ .Values.images.repository }}/{{ .Values.checkoutService.name }}:{{ .Values.checkoutService.image.tag | default .Chart.AppVersion }}
         ports:
         - containerPort: 5050
+          protocol: TCP
         readinessProbe:
           grpc:
             port: 5050
+            service: ""
         livenessProbe:
           grpc:
             port: 5050
+            service: ""
         env:
         - name: CHECKOUT_REDIS_ADDR
           value: "redis-checkout:6379"
