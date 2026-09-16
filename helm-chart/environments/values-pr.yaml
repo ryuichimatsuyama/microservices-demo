@@ -1,0 +1,32 @@
+frontend:
+  slo:
+    enabled: false
+
+slos:
+  externalServices:
+    - name: online-boutique-external
+      enabled: false
+
+  grpcServices:
+    - name: adservice
+      enabled: false
+    - name: cartservice
+      enabled: false
+    - name: checkoutservice
+      enabled: false
+    - name: currencyservice
+      enabled: false
+    - name: emailservice
+      enabled: false
+    - name: paymentservice
+      enabled: false
+    - name: productcatalogservice
+      enabled: false
+    - name: recommendationservice
+      enabled: false
+    - name: shippingservice
+      enabled: false
+
+opentelemetryCollector:
+  clusterRbac:
+    create: false
