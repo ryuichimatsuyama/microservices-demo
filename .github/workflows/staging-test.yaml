@@ -36,10 +36,12 @@ jobs:
       - name: Wait for PR Application
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          EXPECTED_REVISION: ${{ github.event.pull_request.head.sha }}
         run: |
           APP="pr-${PR_NUMBER}"
 
-          echo "Waiting for ${APP} to become Synced and Healthy..."
+          echo "Waiting for ${APP}"
+          echo "Expected revision: ${EXPECTED_REVISION}"
 
           for i in {1..60}; do
             if ! kubectl get application "$APP" -n argocd >/dev/null 2>&1; then
@@ -54,19 +56,28 @@ jobs:
             HEALTH=$(kubectl get application "$APP" -n argocd \
               -o jsonpath='{.status.health.status}')
 
-            echo "Attempt ${i}/60: sync=${SYNC}, health=${HEALTH}"
+            REVISION=$(kubectl get application "$APP" -n argocd \
+              -o jsonpath='{.status.sync.revision}')
 
-            if [[ "$SYNC" == "Synced" && "$HEALTH" == "Healthy" ]]; then
-              echo "SUCCESS: ${APP} is Synced and Healthy."
+            echo "Attempt ${i}/60:"
+            echo "  revision=${REVISION}"
+            echo "  sync=${SYNC}"
+            echo "  health=${HEALTH}"
+
+            if [[ "$REVISION" == "$EXPECTED_REVISION" \
+              && "$SYNC" == "Synced" \
+              && "$HEALTH" == "Healthy" ]]; then
+
+              echo "SUCCESS: ${APP} deployed expected PR revision."
               exit 0
             fi
 
             sleep 10
           done
 
-          echo "ERROR: ${APP} did not become Synced and Healthy within 10 minutes."
+          echo "ERROR: ${APP} did not deploy expected revision."
 
           kubectl get application "$APP" -n argocd \
-            -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
+            -o custom-columns='NAME:.metadata.name,REVISION:.status.sync.revision,SYNC:.status.sync.status,HEALTH:.status.health.status'
 
           exit 1
