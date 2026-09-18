@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # ------------------------------------------------------------
+      # AWS authentication
+      # ------------------------------------------------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -27,20 +30,246 @@ jobs:
             --region "${{ vars.AWS_REGION }}" \
             --name "${{ vars.EKS_CLUSTER_NAME }}"
 
-      - name: Check identity
+      # ------------------------------------------------------------
+      # Wait until ApplicationSet creates the PR Application
+      # ------------------------------------------------------------
+      - name: Smoke Test PR Application
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          aws sts get-caller-identity
+          NAMESPACE="pr-${PR_NUMBER}"
+          BASE_URL="http://127.0.0.1:8080"
 
-      - name: Check Kubernetes RBAC
-        run: |
-          kubectl auth can-i get applications.argoproj.io -n argocd
-          kubectl auth can-i get appprojects.argoproj.io -n argocd
-          kubectl auth can-i delete applications.argoproj.io -n argocd
+          echo "Starting port-forward to frontend in ${NAMESPACE}..."
 
-      - name: Find PR Application
-        run: |
-          APP="pr-${{ github.event.pull_request.number }}"
+          kubectl port-forward \
+            -n "${NAMESPACE}" \
+            service/frontend \
+            8080:80 \
+            > /tmp/port-forward.log 2>&1 &
 
-          kubectl get application "$APP" \
-            -n argocd \
-            -o wide
+          PF_PID=$!
+
+          cleanup() {
+            echo "Stopping port-forward..."
+            kill "${PF_PID}" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          # --------------------------------------------------
+          # 1. Wait for frontend
+          # --------------------------------------------------
+
+          echo "Waiting for frontend..."
+
+          for i in {1..30}; do
+            if curl \
+              --fail \
+              --silent \
+              --show-error \
+              --max-time 5 \
+              "${BASE_URL}/" \
+              > /tmp/home.html; then
+
+              echo "SUCCESS: Homepage is reachable."
+              break
+            fi
+
+            if [[ "$i" == "30" ]]; then
+              echo "ERROR: Homepage did not become reachable."
+              cat /tmp/port-forward.log || true
+              exit 1
+            fi
+
+            echo "Attempt ${i}/30: frontend not ready yet."
+            sleep 5
+          done
+
+          # --------------------------------------------------
+          # 2. Check homepage content
+          # --------------------------------------------------
+
+          echo "Checking homepage content..."
+
+          if ! grep -q "Online Boutique" /tmp/home.html; then
+            echo "ERROR: Expected homepage content was not found."
+            exit 1
+          fi
+
+          echo "SUCCESS: Homepage content is valid."
+
+          # --------------------------------------------------
+          # 3. Product detail
+          # --------------------------------------------------
+
+          PRODUCT_ID="OLJCESPC7Z"
+
+          echo "Testing product page: ${PRODUCT_ID}"
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --output /tmp/product.html \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            "${BASE_URL}/product/${PRODUCT_ID}")
+
+          echo "Product page HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" ]]; then
+            echo "ERROR: Product page returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+
+          # --------------------------------------------------
+          # 4. Validate product response
+          # --------------------------------------------------
+
+          if [[ ! -s /tmp/product.html ]]; then
+            echo "ERROR: Product page returned an empty response."
+            exit 1
+          fi
+
+          echo "SUCCESS: Product page returned valid content."
+          echo "SUCCESS: Application smoke test passed."
+
+          # --------------------------------------------------
+          # 5. Add product to cart
+          # --------------------------------------------------
+
+          echo "Adding product to cart..."
+
+          COOKIE_JAR="/tmp/cookies.txt"
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --cookie-jar "${COOKIE_JAR}" \
+            --cookie "${COOKIE_JAR}" \
+            --output /tmp/add-cart.html \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            --request POST \
+            --data-urlencode "product_id=${PRODUCT_ID}" \
+            --data-urlencode "quantity=1" \
+            "${BASE_URL}/cart")
+
+          echo "Add-to-cart HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" && "${HTTP_CODE}" != "302" ]]; then
+            echo "ERROR: Add-to-cart returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+
+          echo "SUCCESS: Product added to cart."
+
+          # --------------------------------------------------
+          # 6. Verify cart
+          # --------------------------------------------------
+
+          echo "Checking cart..."
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --cookie "${COOKIE_JAR}" \
+            --output /tmp/cart.html \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            "${BASE_URL}/cart")
+
+          echo "Cart HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" ]]; then
+            echo "ERROR: Cart returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+
+          if ! grep -q "${PRODUCT_ID}" /tmp/cart.html; then
+            echo "ERROR: Product ${PRODUCT_ID} was not found in cart."
+            exit 1
+          fi
+
+          echo "SUCCESS: Product ${PRODUCT_ID} exists in cart."
+
+          # --------------------------------------------------
+          # 7. Checkout
+          # --------------------------------------------------
+
+          echo "Placing test order..."
+
+          CURRENT_YEAR=$(date +%Y)
+          EXPIRATION_YEAR=$((CURRENT_YEAR + 1))
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --cookie "${COOKIE_JAR}" \
+            --cookie-jar "${COOKIE_JAR}" \
+            --output /tmp/order.html \
+            --write-out "%{http_code}" \
+            --max-time 30 \
+            --request POST \
+            --data-urlencode "email=test@example.com" \
+            --data-urlencode "street_address=123 Test Street" \
+            --data-urlencode "zip_code=10001" \
+            --data-urlencode "city=New York" \
+            --data-urlencode "state=NY" \
+            --data-urlencode "country=United States" \
+            --data-urlencode "credit_card_number=4111111111111111" \
+            --data-urlencode "credit_card_expiration_month=12" \
+            --data-urlencode "credit_card_expiration_year=${EXPIRATION_YEAR}" \
+            --data-urlencode "credit_card_cvv=123" \
+            "${BASE_URL}/cart/checkout")
+
+          echo "Checkout HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" ]]; then
+            echo "ERROR: Checkout returned HTTP ${HTTP_CODE}."
+
+            echo "=== Checkout response ==="
+            head -100 /tmp/order.html || true
+
+            exit 1
+          fi
+
+          echo "SUCCESS: Checkout returned HTTP 200."
+
+          # --------------------------------------------------
+          # 8. Verify order confirmation
+          # --------------------------------------------------
+
+          echo "Verifying order confirmation..."
+
+          if [[ ! -s /tmp/order.html ]]; then
+            echo "ERROR: Checkout returned an empty response."
+            exit 1
+          fi
+
+          # Order completion marker
+          if ! grep -Fq "Your order is complete!" /tmp/order.html; then
+            echo "ERROR: Order completion marker was not found."
+            head -100 /tmp/order.html || true
+            exit 1
+          fi
+
+          # Confirmation section
+          if ! grep -Fq "Confirmation #" /tmp/order.html; then
+            echo "ERROR: Confirmation number section was not found."
+            exit 1
+          fi
+
+          # Tracking section
+          if ! grep -Fq "Tracking #" /tmp/order.html; then
+            echo "ERROR: Tracking number section was not found."
+            exit 1
+          fi
+
+          # Payment summary
+          if ! grep -Fq "THIS_SHOULD_NEVER_EXIST" /tmp/order.html; then
+            echo "ERROR: Total Paid section was not found."
+            exit 1
+          fi
+
+          echo "SUCCESS: Order confirmation page verified."
+          echo "SUCCESS: End-to-end smoke test passed."
