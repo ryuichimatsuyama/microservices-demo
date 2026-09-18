@@ -191,3 +191,58 @@ jobs:
           fi
 
           echo "SUCCESS: Product ${PRODUCT_ID} exists in cart."
+
+          # --------------------------------------------------
+          # 7. Checkout
+          # --------------------------------------------------
+
+          echo "Placing test order..."
+
+          CURRENT_YEAR=$(date +%Y)
+          EXPIRATION_YEAR=$((CURRENT_YEAR + 1))
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --cookie "${COOKIE_JAR}" \
+            --cookie-jar "${COOKIE_JAR}" \
+            --output /tmp/order.html \
+            --write-out "%{http_code}" \
+            --max-time 30 \
+            --request POST \
+            --data-urlencode "email=test@example.com" \
+            --data-urlencode "street_address=123 Test Street" \
+            --data-urlencode "zip_code=10001" \
+            --data-urlencode "city=New York" \
+            --data-urlencode "state=NY" \
+            --data-urlencode "country=United States" \
+            --data-urlencode "credit_card_number=4111111111111111" \
+            --data-urlencode "credit_card_expiration_month=12" \
+            --data-urlencode "credit_card_expiration_year=${EXPIRATION_YEAR}" \
+            --data-urlencode "credit_card_cvv=123" \
+            "${BASE_URL}/cart/checkout")
+
+          echo "Checkout HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" ]]; then
+            echo "ERROR: Checkout returned HTTP ${HTTP_CODE}."
+
+            echo "=== Checkout response ==="
+            head -100 /tmp/order.html || true
+
+            exit 1
+          fi
+
+          echo "SUCCESS: Checkout returned HTTP 200."
+
+          # --------------------------------------------------
+          # 8. Verify order confirmation
+          # --------------------------------------------------
+
+          if [[ ! -s /tmp/order.html ]]; then
+            echo "ERROR: Checkout returned an empty response."
+            exit 1
+          fi
+
+          echo "SUCCESS: Order confirmation page returned content."
+          echo "SUCCESS: End-to-end smoke test passed."
