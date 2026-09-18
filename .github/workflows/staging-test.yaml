@@ -81,3 +81,62 @@ jobs:
             -o custom-columns='NAME:.metadata.name,REVISION:.status.sync.revision,SYNC:.status.sync.status,HEALTH:.status.health.status'
 
           exit 1
+
+      - name: Smoke Test PR Frontend
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          NAMESPACE="pr-${PR_NUMBER}"
+
+          echo "Starting port-forward to frontend in ${NAMESPACE}..."
+
+          kubectl port-forward \
+            -n "${NAMESPACE}" \
+            service/frontend \
+            8080:80 \
+            > /tmp/port-forward.log 2>&1 &
+
+          PF_PID=$!
+
+          cleanup() {
+            echo "Stopping port-forward..."
+            kill "${PF_PID}" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          echo "Waiting for frontend HTTP endpoint..."
+
+          for i in {1..30}; do
+            if curl \
+              --fail \
+              --silent \
+              --show-error \
+              --max-time 5 \
+              http://127.0.0.1:8080/ \
+              > /dev/null; then
+
+              echo "SUCCESS: Frontend HTTP smoke test passed."
+              exit 0
+            fi
+
+            echo "Attempt ${i}/30: frontend not reachable yet."
+            sleep 5
+          done
+
+          echo "ERROR: Frontend HTTP smoke test failed."
+
+          echo "=== Port-forward log ==="
+          cat /tmp/port-forward.log || true
+
+          echo "=== Frontend Service ==="
+          kubectl get service frontend \
+            -n "${NAMESPACE}" \
+            -o wide || true
+
+          echo "=== Frontend Pods ==="
+          kubectl get pods \
+            -n "${NAMESPACE}" \
+            -l app=frontend \
+            -o wide || true
+
+          exit 1
