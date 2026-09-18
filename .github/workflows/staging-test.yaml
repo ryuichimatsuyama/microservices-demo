@@ -239,10 +239,37 @@ jobs:
           # 8. Verify order confirmation
           # --------------------------------------------------
 
+          echo "Verifying order confirmation..."
+
           if [[ ! -s /tmp/order.html ]]; then
             echo "ERROR: Checkout returned an empty response."
             exit 1
           fi
 
-          echo "SUCCESS: Order confirmation page returned content."
+          # Order completion marker
+          if ! grep -Fq "Your order is complete!" /tmp/order.html; then
+            echo "ERROR: Order completion marker was not found."
+            head -100 /tmp/order.html || true
+            exit 1
+          fi
+
+          # Confirmation section
+          if ! grep -Fq "Confirmation #" /tmp/order.html; then
+            echo "ERROR: Confirmation number section was not found."
+            exit 1
+          fi
+
+          # Tracking section
+          if ! grep -Fq "Tracking #" /tmp/order.html; then
+            echo "ERROR: Tracking number section was not found."
+            exit 1
+          fi
+
+          # Payment summary
+          if ! grep -Fq "Total Paid" /tmp/order.html; then
+            echo "ERROR: Total Paid section was not found."
+            exit 1
+          fi
+
+          echo "SUCCESS: Order confirmation page verified."
           echo "SUCCESS: End-to-end smoke test passed."
