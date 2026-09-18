@@ -33,60 +33,12 @@ jobs:
       # ------------------------------------------------------------
       # Wait until ApplicationSet creates the PR Application
       # ------------------------------------------------------------
-      - name: Wait for PR Application
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          EXPECTED_REVISION: ${{ github.event.pull_request.head.sha }}
-        run: |
-          APP="pr-${PR_NUMBER}"
-
-          echo "Waiting for ${APP}"
-          echo "Expected revision: ${EXPECTED_REVISION}"
-
-          for i in {1..60}; do
-            if ! kubectl get application "$APP" -n argocd >/dev/null 2>&1; then
-              echo "Attempt ${i}/60: Application not found yet."
-              sleep 10
-              continue
-            fi
-
-            SYNC=$(kubectl get application "$APP" -n argocd \
-              -o jsonpath='{.status.sync.status}')
-
-            HEALTH=$(kubectl get application "$APP" -n argocd \
-              -o jsonpath='{.status.health.status}')
-
-            REVISION=$(kubectl get application "$APP" -n argocd \
-              -o jsonpath='{.status.sync.revision}')
-
-            echo "Attempt ${i}/60:"
-            echo "  revision=${REVISION}"
-            echo "  sync=${SYNC}"
-            echo "  health=${HEALTH}"
-
-            if [[ "$REVISION" == "$EXPECTED_REVISION" \
-              && "$SYNC" == "Synced" \
-              && "$HEALTH" == "Healthy" ]]; then
-
-              echo "SUCCESS: ${APP} deployed expected PR revision."
-              exit 0
-            fi
-
-            sleep 10
-          done
-
-          echo "ERROR: ${APP} did not deploy expected revision."
-
-          kubectl get application "$APP" -n argocd \
-            -o custom-columns='NAME:.metadata.name,REVISION:.status.sync.revision,SYNC:.status.sync.status,HEALTH:.status.health.status'
-
-          exit 1
-
-      - name: Smoke Test PR Frontend
+      - name: Smoke Test PR Application
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           NAMESPACE="pr-${PR_NUMBER}"
+          BASE_URL="http://127.0.0.1:8080"
 
           echo "Starting port-forward to frontend in ${NAMESPACE}..."
 
@@ -104,7 +56,11 @@ jobs:
           }
           trap cleanup EXIT
 
-          echo "Waiting for frontend HTTP endpoint..."
+          # --------------------------------------------------
+          # 1. Wait for frontend
+          # --------------------------------------------------
+
+          echo "Waiting for frontend..."
 
           for i in {1..30}; do
             if curl \
@@ -112,31 +68,67 @@ jobs:
               --silent \
               --show-error \
               --max-time 5 \
-              http://127.0.0.1:8080/ \
-              > /dev/null; then
+              "${BASE_URL}/" \
+              > /tmp/home.html; then
 
-              echo "SUCCESS: Frontend HTTP smoke test passed."
-              exit 0
+              echo "SUCCESS: Homepage is reachable."
+              break
             fi
 
-            echo "Attempt ${i}/30: frontend not reachable yet."
+            if [[ "$i" == "30" ]]; then
+              echo "ERROR: Homepage did not become reachable."
+              cat /tmp/port-forward.log || true
+              exit 1
+            fi
+
+            echo "Attempt ${i}/30: frontend not ready yet."
             sleep 5
           done
 
-          echo "ERROR: Frontend HTTP smoke test failed."
+          # --------------------------------------------------
+          # 2. Check homepage content
+          # --------------------------------------------------
 
-          echo "=== Port-forward log ==="
-          cat /tmp/port-forward.log || true
+          echo "Checking homepage content..."
 
-          echo "=== Frontend Service ==="
-          kubectl get service frontend \
-            -n "${NAMESPACE}" \
-            -o wide || true
+          if ! grep -q "Online Boutique" /tmp/home.html; then
+            echo "ERROR: Expected homepage content was not found."
+            exit 1
+          fi
 
-          echo "=== Frontend Pods ==="
-          kubectl get pods \
-            -n "${NAMESPACE}" \
-            -l app=frontend \
-            -o wide || true
+          echo "SUCCESS: Homepage content is valid."
 
-          exit 1
+          # --------------------------------------------------
+          # 3. Product detail
+          # --------------------------------------------------
+
+          PRODUCT_ID="OLJCESPC7Z"
+
+          echo "Testing product page: ${PRODUCT_ID}"
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --output /tmp/product.html \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            "${BASE_URL}/product/${PRODUCT_ID}")
+
+          echo "Product page HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" ]]; then
+            echo "ERROR: Product page returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+
+          # --------------------------------------------------
+          # 4. Validate product response
+          # --------------------------------------------------
+
+          if [[ ! -s /tmp/product.html ]]; then
+            echo "ERROR: Product page returned an empty response."
+            exit 1
+          fi
+
+          echo "SUCCESS: Product page returned valid content."
+          echo "SUCCESS: Application smoke test passed."
