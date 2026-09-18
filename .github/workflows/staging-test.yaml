@@ -132,3 +132,62 @@ jobs:
 
           echo "SUCCESS: Product page returned valid content."
           echo "SUCCESS: Application smoke test passed."
+
+          # --------------------------------------------------
+          # 5. Add product to cart
+          # --------------------------------------------------
+
+          echo "Adding product to cart..."
+
+          COOKIE_JAR="/tmp/cookies.txt"
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --cookie-jar "${COOKIE_JAR}" \
+            --cookie "${COOKIE_JAR}" \
+            --output /tmp/add-cart.html \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            --request POST \
+            --data-urlencode "product_id=${PRODUCT_ID}" \
+            --data-urlencode "quantity=1" \
+            "${BASE_URL}/cart")
+
+          echo "Add-to-cart HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" && "${HTTP_CODE}" != "302" ]]; then
+            echo "ERROR: Add-to-cart returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+
+          echo "SUCCESS: Product added to cart."
+
+          # --------------------------------------------------
+          # 6. Verify cart
+          # --------------------------------------------------
+
+          echo "Checking cart..."
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --cookie "${COOKIE_JAR}" \
+            --output /tmp/cart.html \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            "${BASE_URL}/cart")
+
+          echo "Cart HTTP status: ${HTTP_CODE}"
+
+          if [[ "${HTTP_CODE}" != "200" ]]; then
+            echo "ERROR: Cart returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+
+          if ! grep -q "${PRODUCT_ID}" /tmp/cart.html; then
+            echo "ERROR: Product ${PRODUCT_ID} was not found in cart."
+            exit 1
+          fi
+
+          echo "SUCCESS: Product ${PRODUCT_ID} exists in cart."
