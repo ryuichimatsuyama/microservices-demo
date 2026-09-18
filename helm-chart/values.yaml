@@ -19,7 +19,7 @@
 images:
   repository: ghcr.io/ryuichimatsuyama
   # renovate: datasource=docker depName=ghcr.io/ryuichimatsuyama/release
-  tag: "v2026.09.15-100521-591b12d"
+  tag: "v2026.09.18-120239-d9d7b10"
 serviceAccounts:
   # Specifies whether service accounts should be created.
   create: true
