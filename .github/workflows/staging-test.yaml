@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   verify-pr-environment:
-    name: Verify PR Environment
+    name: E2E - Purchase Flow
     runs-on: ubuntu-24.04
 
     steps:
@@ -81,7 +81,7 @@ jobs:
             -o custom-columns='NAME:.metadata.name,REVISION:.status.sync.revision,SYNC:.status.sync.status,HEALTH:.status.health.status'
 
           exit 1
-          
+
       - name: Smoke Test PR Application
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -322,3 +322,99 @@ jobs:
 
           echo "SUCCESS: Order confirmation page verified."
           echo "SUCCESS: End-to-end smoke test passed."
+
+      # ------------------------------------------------------------
+      # Collect diagnostics when E2E fails
+      # ------------------------------------------------------------
+      - name: Collect diagnostics
+        if: failure()
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          NAMESPACE="pr-${PR_NUMBER}"
+          DIAG_DIR="diagnostics"
+
+          mkdir -p "${DIAG_DIR}/logs"
+          mkdir -p "${DIAG_DIR}/previous-logs"
+
+          echo "Collecting diagnostics from ${NAMESPACE}..."
+
+          # --------------------------------------------------
+          # Cluster / workload state
+          # --------------------------------------------------
+
+          kubectl get all \
+            -n "${NAMESPACE}" \
+            -o wide \
+            > "${DIAG_DIR}/resources.txt" 2>&1 || true
+
+          kubectl get pods \
+            -n "${NAMESPACE}" \
+            -o wide \
+            > "${DIAG_DIR}/pods.txt" 2>&1 || true
+
+          kubectl get events \
+            -n "${NAMESPACE}" \
+            --sort-by='.lastTimestamp' \
+            > "${DIAG_DIR}/events.txt" 2>&1 || true
+
+          kubectl describe pods \
+            -n "${NAMESPACE}" \
+            > "${DIAG_DIR}/pods-describe.txt" 2>&1 || true
+
+          kubectl get application "pr-${PR_NUMBER}" \
+            -n argocd \
+            -o yaml \
+            > "${DIAG_DIR}/argocd-application.yaml" 2>&1 || true
+
+          kubectl describe application "pr-${PR_NUMBER}" \
+            -n argocd \
+            > "${DIAG_DIR}/argocd-application-describe.txt" 2>&1 || true
+
+          # --------------------------------------------------
+          # Current container logs
+          # --------------------------------------------------
+
+          while read -r pod; do
+            POD_NAME="${pod#pod/}"
+
+            echo "Collecting logs from ${POD_NAME}..."
+
+            kubectl logs \
+              -n "${NAMESPACE}" \
+              "${POD_NAME}" \
+              --all-containers=true \
+              --timestamps=true \
+              > "${DIAG_DIR}/logs/${POD_NAME}.log" 2>&1 || true
+
+            # ------------------------------------------------
+            # Previous logs (CrashLoopBackOff etc.)
+            # ------------------------------------------------
+
+            kubectl logs \
+              -n "${NAMESPACE}" \
+              "${POD_NAME}" \
+              --all-containers=true \
+              --previous \
+              --timestamps=true \
+              > "${DIAG_DIR}/previous-logs/${POD_NAME}.log" 2>&1 || true
+
+          done < <(
+            kubectl get pods \
+              -n "${NAMESPACE}" \
+              -o name
+          )
+
+          echo "Diagnostics collection completed."
+
+      # ------------------------------------------------------------
+      # Preserve diagnostics with the failed workflow
+      # ------------------------------------------------------------
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ github.event.pull_request.number }}-e2e-diagnostics
+          path: diagnostics/
+          retention-days: 7
+          if-no-files-found: warn
