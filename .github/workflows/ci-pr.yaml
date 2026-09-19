@@ -121,3 +121,22 @@ jobs:
           push: true
         env:
           TAG: ${{ github.sha }}
+  
+    ci-required:
+      name: CI Required
+      if: always()
+      needs:
+        - code-tests
+        - build
+      runs-on: ubuntu-24.04
+
+      steps:
+        - name: Verify required CI jobs
+          run: |
+            echo "code-tests: ${{ needs.code-tests.result }}"
+            echo "build:      ${{ needs.build.result }}"
+
+            if [[ "${{ needs.code-tests.result }}" != "success" ]] ||
+              [[ "${{ needs.build.result }}" != "success" ]]; then
+              exit 1
+            fi
