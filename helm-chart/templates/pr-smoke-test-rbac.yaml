@@ -1,4 +1,5 @@
 {{- if .Values.prEnvironment.enabled }}
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -15,9 +16,16 @@ rules:
 
   - apiGroups: [""]
     resources:
+      - pods/log
+    verbs:
+      - get
+
+  - apiGroups: [""]
+    resources:
       - pods/portforward
     verbs:
       - create
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -32,4 +40,5 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: github-actions-smoke-test
+
 {{- end }}
