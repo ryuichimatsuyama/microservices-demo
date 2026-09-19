@@ -315,7 +315,7 @@ jobs:
           fi
 
           # Payment summary
-          if ! grep -Fq "Total Paid" /tmp/order.html; then
+          if ! grep -Fq "THIS_SHOULD_NEVER_EXIST" /tmp/order.html; then
             echo "ERROR: Total Paid section was not found."
             exit 1
           fi
