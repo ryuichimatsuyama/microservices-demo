@@ -1,4 +1,4 @@
-{{- if .Values.checkoutService.create }}
+{{- if and .Values.checkoutService.create .Values.argoRollouts.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:

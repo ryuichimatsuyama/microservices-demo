@@ -37,6 +37,8 @@ authorizationPolicies:
   # Specifies if the AuthorizationPolicies are created or not. If true, one fine granular AuthorizationPolicy per app is created.
   create: false
 opentelemetryCollector:
+  serviceMonitor:
+    enabled: true
   create: true
   name: opentelemetrycollector
   clusterRbac:
@@ -417,3 +419,5 @@ prEnvironment:
   enabled: false
   githubActionsGroup: github-actions-pr-validation
 
+argoRollouts:
+  enabled: true

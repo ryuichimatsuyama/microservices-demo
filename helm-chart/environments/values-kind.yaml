@@ -1,0 +1,64 @@
+# Local kind environment
+# Keep this environment minimal so that Online Boutique can run
+# without Istio, Sloth/Prometheus Operator, or OpenTelemetry.
+
+opentelemetryCollector:
+  create: true
+  serviceMonitor:
+    enabled: false
+
+googleCloudOperations:
+  profiler: false
+  tracing: false
+  metrics: false
+
+frontend:
+  externalService: false
+  slo:
+    enabled: false
+  virtualService:
+    create: false
+
+loadGenerator:
+  create: false
+
+slos:
+  externalServices:
+    - name: online-boutique-external
+      enabled: false
+
+  grpcServices:
+    - name: adservice
+      enabled: false
+    - name: cartservice
+      enabled: false
+    - name: checkoutservice
+      enabled: false
+    - name: currencyservice
+      enabled: false
+    - name: emailservice
+      enabled: false
+    - name: paymentservice
+      enabled: false
+    - name: productcatalogservice
+      enabled: false
+    - name: recommendationservice
+      enabled: false
+    - name: shippingservice
+      enabled: false
+
+resilience:
+  defaults:
+    destinationRule:
+      enabled: false
+
+    virtualService:
+      enabled: false
+
+prEnvironment:
+  enabled: false
+
+argoRollouts:
+  enabled: false
+
+istioRevision: ""

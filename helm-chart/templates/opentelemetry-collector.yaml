@@ -296,6 +296,7 @@ spec:
         ports:
         - "4317"
 {{- end }}
+{{- if .Values.opentelemetryCollector.serviceMonitor.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -318,6 +319,7 @@ spec:
       path: /metrics
       interval: 30s
       scrapeTimeout: 10s
+{{- end }}
 {{- if .Values.opentelemetryCollector.clusterRbac.create }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
