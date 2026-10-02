@@ -27,27 +27,34 @@ metadata:
   {{- end }}
 ---
 {{- end }}
+{{- if .Values.argoRollouts.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
+{{- else }}
+apiVersion: apps/v1
+kind: Deployment
+{{- end }}
+
 metadata:
   name: {{ .Values.checkoutService.name }}
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Values.checkoutService.name }}
+
 spec:
   replicas: {{ .Values.checkoutService.replicas }}
+
+  {{- if .Values.argoRollouts.enabled }}
   strategy:
     canary:
       stableService: {{ .Values.checkoutService.name }}-stable
       canaryService: {{ .Values.checkoutService.name }}-canary
-
       trafficRouting:
         istio:
           virtualService:
             name: {{ .Values.checkoutService.name }}
             routes:
               - primary
-
       steps:
         - setWeight: 20
         - pause:
@@ -62,9 +69,12 @@ spec:
             templates:
               - templateName: checkout-availability
         - setWeight: 100
+  {{- end }}
+
   selector:
     matchLabels:
       app: {{ .Values.checkoutService.name }}
+
   template:
     metadata:
       labels:
@@ -156,6 +166,7 @@ spec:
   - name: grpc
     port: 5050
     targetPort: 5050
+{{- if .Values.argoRollouts.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -188,6 +199,7 @@ spec:
     - name: grpc
       port: 5050
       targetPort: 5050
+{{- end }}
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
