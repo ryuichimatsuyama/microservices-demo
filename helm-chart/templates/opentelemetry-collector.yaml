@@ -97,6 +97,12 @@ spec:
         args:
         - --config=/conf/collector-gateway-config.yaml
         image: otel/opentelemetry-collector-contrib:0.157.0@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6
+        env:
+        - name: DD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: datadog-secret
+              key: api-key
         volumeMounts:
         - name: collector-gateway-config
           mountPath: /conf
@@ -170,6 +176,10 @@ data:
         endpoint: jaeger.monitoring.svc.cluster.local:4317
         tls:
           insecure: true
+      datadog:
+        api:
+          key: ${env:DD_API_KEY}
+          site: ap1.datadoghq.com
       debug:
         verbosity: detailed
       prometheus:
@@ -186,11 +196,11 @@ data:
         metrics:
           receivers: [otlp]
           processors: [batch]
-          exporters: [prometheus, debug] # Export metrics to Prometheus
+          exporters: [datadog, debug]
         traces:
           receivers: [otlp]
           processors: [k8sattributes, batch]
-          exporters: [otlp, debug]
+          exporters: [datadog, debug]
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -295,30 +305,6 @@ spec:
     - operation:
         ports:
         - "4317"
-{{- end }}
-{{- if .Values.opentelemetryCollector.serviceMonitor.enabled }}
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ .Values.opentelemetryCollector.name }}
-  namespace: {{ .Release.Namespace }}
-  labels:
-    release: monitoring
-spec:
-  selector:
-    matchLabels:
-      app: {{ .Values.opentelemetryCollector.name }}
-
-  namespaceSelector:
-    matchNames:
-      - {{ .Release.Namespace }}
-
-  endpoints:
-    - port: prometheus
-      path: /metrics
-      interval: 30s
-      scrapeTimeout: 10s
 {{- end }}
 {{- if .Values.opentelemetryCollector.clusterRbac.create }}
 ---
