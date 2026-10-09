@@ -16,7 +16,7 @@
   },
 
   constraints: {
-    python: '3.14.6',
+    python: '3.14.8',
   },
 
   kubernetes: {
