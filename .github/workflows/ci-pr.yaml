@@ -35,7 +35,7 @@ jobs:
   code-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v5
       env:
         DOTNET_INSTALL_DIR: "./.dotnet"
@@ -80,7 +80,7 @@ jobs:
           - loadgenerator
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       # ■ Buildxセットアップ
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
